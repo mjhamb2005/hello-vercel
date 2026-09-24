@@ -1,3 +1,4 @@
+export const dynamic = 'force-dynamic'
 import { supabase } from '@/lib/supabase'
 
 export default async function BooksPage() {
