@@ -32,7 +32,7 @@ export default async function ProfilePage() {
           photoUrl={profile?.profile_photo_url ?? null}
         />
         {!needsName && (
-          <a href="/dashboard" className="hv-back">← Back to dashboard</a>
+          <a href="/jokes" className="hv-back">← Back to jokes</a>
         )}
       </div>
     </main>

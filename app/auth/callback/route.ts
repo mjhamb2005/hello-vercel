@@ -15,7 +15,7 @@ export async function POST(request: Request) {
     })
 
     if (!error) {
-      return NextResponse.redirect(`${origin}/dashboard`, 303)
+      return NextResponse.redirect(`${origin}/jokes`, 303)
     }
     console.error('Login error:', error.message)
   }

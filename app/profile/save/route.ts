@@ -50,5 +50,5 @@ export async function POST(request: Request) {
   const { error } = await supabase.from('profiles').update(updates).eq('id', user.id)
   if (error) console.error('Save error:', error.message)
 
-  return NextResponse.redirect(`${origin}/dashboard`, 303)
+  return NextResponse.redirect(`${origin}/jokes`, 303)
 }
