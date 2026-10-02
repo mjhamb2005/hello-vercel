@@ -1,10 +1,13 @@
-import { createServerClient } from '@supabase/ssr'
 import { NextResponse, type NextRequest } from 'next/server'
+import { createServerClient } from '@supabase/ssr'
+import { HOME, NEXT_COOKIE, OLD_ROUTES } from '@/lib/routes'
 
-// Pages only logged-in users can see
-const PROTECTED_PAGES = ['/dashboard', '/profile']
-
-export async function proxy(request: NextRequest) {
+// Routing rules:
+//   Logged out + any page except "/"  -> "/" (remembering where they were headed)
+//   Logged in  + "/"                  -> /memes
+//   Old routes (/dashboard, /books...) -> /memes
+//   /auth/* and /api/* handle themselves (APIs return 401 JSON, never redirects)
+   export async function proxy(request: NextRequest) {
   let response = NextResponse.next({ request })
 
   const supabase = createServerClient(
@@ -16,37 +19,40 @@ export async function proxy(request: NextRequest) {
           return request.cookies.getAll()
         },
         setAll(cookiesToSet) {
-          cookiesToSet.forEach(({ name, value }) =>
-            request.cookies.set(name, value)
-          )
+          cookiesToSet.forEach(({ name, value }) => request.cookies.set(name, value))
           response = NextResponse.next({ request })
-          cookiesToSet.forEach(({ name, value, options }) =>
-            response.cookies.set(name, value, options)
-          )
+          cookiesToSet.forEach(({ name, value, options }) => response.cookies.set(name, value, options))
         },
       },
     }
   )
 
-  // Check who is logged in (this also renews the login)
-  const {
-    data: { user },
-  } = await supabase.auth.getUser()
+  // Also refreshes an expiring session
+  const { data: { user } } = await supabase.auth.getUser()
+  const { pathname, search } = request.nextUrl
 
-  // Logged out + trying to open a protected page → send to /login
-  const path = request.nextUrl.pathname
-  if (!user && PROTECTED_PAGES.some((page) => path.startsWith(page))) {
+  if (pathname.startsWith('/api') || pathname.startsWith('/auth')) return response
+
+  const redirectTo = (path: string) => {
     const url = request.nextUrl.clone()
-    url.pathname = '/login'
-    return NextResponse.redirect(url)
+    url.pathname = path
+    url.search = ''
+    const r = NextResponse.redirect(url)
+    response.cookies.getAll().forEach((c) => r.cookies.set(c)) // keep refreshed session cookies
+    return r
   }
+
+  if (!user && pathname !== '/') {
+    const r = redirectTo('/')
+    r.cookies.set(NEXT_COOKIE, pathname + search, { path: '/', maxAge: 600, httpOnly: true, sameSite: 'lax' })
+    return r
+  }
+  if (user && pathname === '/') return redirectTo(HOME)
+  if (OLD_ROUTES.some((r) => pathname === r || pathname.startsWith(r + '/'))) return redirectTo(HOME)
 
   return response
 }
 
-// Skip images and Next.js internal files
 export const config = {
-  matcher: [
-    '/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)',
-  ],
+  matcher: ['/((?!_next/static|_next/image|favicon.ico|.*\\.(?:png|jpg|jpeg|gif|svg|webp|ico)$).*)'],
 }
