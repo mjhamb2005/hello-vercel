@@ -37,23 +37,22 @@ async function gemini(parts: unknown[], json = false): Promise<string> {
 }
 
 // Step 1: image -> plain description
+// Exported so the exact prompt text can be saved alongside each image.
+export const DESCRIBE_PROMPT = `Describe this photo for someone who can't see it, so they could write a funny meme caption about it.
+Cover the main subject, what they're doing, facial expressions or body language, the setting, and any odd or funny small details.
+Be concrete and literal. 3 to 5 sentences of plain prose, no lists.`
+
 export async function describeImage(base64Jpeg: string) {
   return gemini([
     { inline_data: { mime_type: 'image/jpeg', data: base64Jpeg } },
-    {
-      text: `Describe this photo for someone who can't see it, so they could write a funny meme caption about it.
-Cover the main subject, what they're doing, facial expressions or body language, the setting, and any odd or funny small details.
-Be concrete and literal. 3 to 5 sentences of plain prose, no lists.`,
-    },
+    { text: DESCRIBE_PROMPT },
   ])
 }
 
 // Step 2: description -> 5 funny captions
-export async function writeCaptions(description: string) {
-  const raw = await gemini(
-    [
-      {
-        text: `You write captions for a meme app. Here is a description of a photo:
+// Exported so the exact prompt text can be saved alongside each caption.
+export function captionPrompt(description: string) {
+  return `You write captions for a meme app. Here is a description of a photo:
 
 ${description}
 
@@ -64,7 +63,14 @@ Rules:
 - Ground every joke in specific details from the description.
 - Keep it kind: no jokes about anyone's body, race, ethnicity, gender, sexuality, age, religion or disability. No slurs.
 - No real song lyrics and no quotes from movies or TV shows.
-Return only JSON in this shape: {"captions": ["...", "...", "...", "...", "..."]}`,
+Return only JSON in this shape: {"captions": ["...", "...", "...", "...", "..."]}`
+}
+
+export async function writeCaptions(description: string) {
+  const raw = await gemini(
+    [
+      {
+        text: captionPrompt(description),
       },
     ],
     true

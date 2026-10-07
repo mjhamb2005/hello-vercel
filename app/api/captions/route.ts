@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server'
 import { sbServer } from '@/lib/sb/server'
-import { writeCaptions } from '@/lib/ai'
+import { DESCRIBE_PROMPT, captionPrompt, writeCaptions } from '@/lib/ai'
 
 export const maxDuration = 60
 
@@ -28,7 +28,7 @@ export async function POST(request: Request) {
 
   const { data: image, error: imageError } = await supabase
     .from('meme_images')
-    .insert({ user_id: user.id, storage_path: path, description })
+    .insert({ user_id: user.id, storage_path: path, description, description_prompt: DESCRIBE_PROMPT })
     .select('id, description')
     .single()
 
@@ -40,9 +40,10 @@ export async function POST(request: Request) {
     )
   }
 
+  const caption_prompt = captionPrompt(description) // same text writeCaptions sent to Gemini
   const { data: rows, error: captionError } = await supabase
     .from('meme_captions')
-    .insert(captions.map((content) => ({ image_id: image.id, content })))
+    .insert(captions.map((content) => ({ image_id: image.id, content, caption_prompt })))
     .select('id, content')
     .order('id')
 
