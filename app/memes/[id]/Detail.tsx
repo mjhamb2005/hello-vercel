@@ -1,12 +1,11 @@
 'use client'
 import { useEffect, useState, type CSSProperties } from 'react'
 import Link from 'next/link'
-import { useRouter } from 'next/navigation'
 import { sbBrowser } from '@/lib/sb/browser'
 import { leaderOf, type Meme, type User } from '@/lib/types'
 import TopBar from '../ui/TopBar'
 import MemeImage, { captionSize } from '../ui/MemeImage'
-import MakeMemeDialog, { reauth } from '../ui/MakeMemeDialog'
+import { reauth } from '../ui/MakeMemeDialog'
 
 // Draw the photo plus caption onto a canvas and download it as a PNG
 async function downloadMeme(url: string, caption: string, id: number) {
@@ -81,14 +80,12 @@ export default function Detail({
   initialVotes: Record<number, number>
   user: User
 }) {
-  const router = useRouter()
   const supabase = sbBrowser()
   const [scores, setScores] = useState(initialScores)
   const [votes, setVotes] = useState(initialVotes)
   const [pending, setPending] = useState<Record<number, boolean>>({})
   const [preview, setPreview] = useState<number | null>(null)
   const [toast, setToast] = useState('')
-  const [making, setMaking] = useState(false)
   const [downloading, setDownloading] = useState(false)
   const [burst, setBurst] = useState(0)
 
@@ -161,7 +158,7 @@ export default function Detail({
 
   return (
     <>
-      <TopBar user={user} onMake={() => setMaking(true)} />
+      <TopBar user={user} />
 
       <div className="c-detail">
         <div className="c-detail-meme">
@@ -247,13 +244,6 @@ export default function Detail({
         </section>
       </div>
 
-      <MakeMemeDialog
-        open={making}
-        userId={user.id}
-        onClose={() => setMaking(false)}
-        onCreated={() => {}}
-        onView={(id) => router.push(`/memes/${id}`)}
-      />
 
       {toast && <div className="c-toast" role="status">{toast}</div>}
     </>

@@ -2,8 +2,10 @@
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import type { User } from '@/lib/types'
+import { useGeneration } from './Generation'
 
-export default function TopBar({ user, onMake }: { user: User; onMake: () => void }) {
+export default function TopBar({ user }: { user: User }) {
+  const { openMaker, running } = useGeneration()
   const pathname = usePathname()
   const initial = (user.name || '?').trim()[0]?.toUpperCase() ?? '?'
   const tab = (href: string, label: string) => (
@@ -21,7 +23,10 @@ export default function TopBar({ user, onMake }: { user: User; onMake: () => voi
         </nav>
       </div>
       <nav className="c-nav" aria-label="Account">
-        <button className="c-btn c-btn-primary" onClick={onMake}>Make a meme</button>
+        <button className="c-btn c-btn-primary" onClick={openMaker}>
+          Make a meme
+          {running > 0 && <span className="c-running" aria-label={`${running} in progress`}>{running}</span>}
+        </button>
         <Link href="/profile" className="c-avatar" aria-label="Your profile">
           {user.avatar ? <img src={user.avatar} alt="" referrerPolicy="no-referrer" /> : <span>{initial}</span>}
         </Link>

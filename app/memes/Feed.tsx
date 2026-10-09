@@ -1,12 +1,11 @@
 'use client'
-import { useEffect, useState, type CSSProperties } from 'react'
+import { useEffect, useMemo, type CSSProperties } from 'react'
 import Link from 'next/link'
-import { useRouter } from 'next/navigation'
 import { sbBrowser } from '@/lib/sb/browser'
 import { leaderOf, type Meme, type User } from '@/lib/types'
 import TopBar from './ui/TopBar'
 import MemeImage from './ui/MemeImage'
-import MakeMemeDialog from './ui/MakeMemeDialog'
+import { useGeneration } from './ui/Generation'
 
 export default function Feed({
   initialMemes,
@@ -19,9 +18,12 @@ export default function Feed({
   user: User
   loadError: string | null
 }) {
-  const router = useRouter()
-  const [memes, setMemes] = useState(initialMemes)
-  const [making, setMaking] = useState(false)
+  const { openMaker, created } = useGeneration()
+  // Memes finished in the background appear at the top, even if they were started on another page
+  const memes = useMemo(() => {
+    const have = new Set(initialMemes.map((m) => m.id))
+    return [...created.filter((m) => !have.has(m.id)), ...initialMemes]
+  }, [created, initialMemes])
 
   useEffect(() => {
     const { data } = sbBrowser().auth.onAuthStateChange((event: string) => {
@@ -40,7 +42,7 @@ export default function Feed({
 
   return (
     <>
-      <TopBar user={user} onMake={() => setMaking(true)} />
+      <TopBar user={user} />
 
       <section className="c-hero">
         <h1>Vote on the funniest caption.</h1>
@@ -57,7 +59,7 @@ export default function Feed({
         <div className="c-empty">
           <h2>Start the first meme</h2>
           <p>Upload a photo and AI will write five captions for everyone to vote on.</p>
-          <button className="c-btn c-btn-primary" onClick={() => setMaking(true)}>Make a meme</button>
+          <button className="c-btn c-btn-primary" onClick={openMaker}>Make a meme</button>
         </div>
       )}
 
@@ -101,13 +103,6 @@ export default function Feed({
         ))}
       </section>
 
-      <MakeMemeDialog
-        open={making}
-        userId={user.id}
-        onClose={() => setMaking(false)}
-        onCreated={(meme) => setMemes((list) => [{ ...meme, fresh: true }, ...list])}
-        onView={(id) => router.push(`/memes/${id}`)}
-      />
     </>
   )
 }

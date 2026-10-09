@@ -1,21 +1,17 @@
 'use client'
-import { useState, type CSSProperties } from 'react'
+import type { CSSProperties } from 'react'
 import Link from 'next/link'
-import { useRouter } from 'next/navigation'
 import type { User } from '@/lib/types'
 import TopBar from '../ui/TopBar'
 import MemeImage from '../ui/MemeImage'
-import MakeMemeDialog from '../ui/MakeMemeDialog'
 
 export type Row = { captionId: number; memeId: number; caption: string; score: number; url: string | null; description: string }
 
 export default function TopList({ rows, user }: { rows: Row[]; user: User }) {
-  const router = useRouter()
-  const [making, setMaking] = useState(false)
 
   return (
     <>
-      <TopBar user={user} onMake={() => setMaking(true)} />
+      <TopBar user={user} />
 
       <section className="c-hero">
         <h1>Top captions.</h1>
@@ -45,13 +41,6 @@ export default function TopList({ rows, user }: { rows: Row[]; user: User }) {
         </ol>
       )}
 
-      <MakeMemeDialog
-        open={making}
-        userId={user.id}
-        onClose={() => setMaking(false)}
-        onCreated={() => {}}
-        onView={(id) => router.push(`/memes/${id}`)}
-      />
     </>
   )
 }
