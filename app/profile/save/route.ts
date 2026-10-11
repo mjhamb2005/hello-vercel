@@ -10,7 +10,7 @@ export async function POST(request: Request) {
   const {
     data: { user },
   } = await supabase.auth.getUser()
-  if (!user) return NextResponse.redirect(`${origin}/login`, 303)
+  if (!user) return NextResponse.redirect(`${origin}/`, 303)
 
   // 2. Read what they typed in the form
   const formData = await request.formData()
@@ -50,5 +50,5 @@ export async function POST(request: Request) {
   const { error } = await supabase.from('profiles').update(updates).eq('id', user.id)
   if (error) console.error('Save error:', error.message)
 
-  return NextResponse.redirect(`${origin}/jokes`, 303)
+  return NextResponse.redirect(`${origin}/memes`, 303)
 }

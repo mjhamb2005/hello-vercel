@@ -60,7 +60,7 @@ async function downloadMeme(url: string, caption: string, id: number) {
   setTimeout(() => URL.revokeObjectURL(a.href), 1000)
 }
 
-const CONFETTI_COLORS = ['#FF4D2E', '#FFD84D', '#141414', '#4D7CFF', '#2EC27E']
+const CONFETTI_COLORS = ['#FFD25A', '#FFE7A3', '#C2183F', '#F7F0E3', '#FF8FA6']
 const PIECES = Array.from({ length: 28 }, (_, i) => ({
   x: Math.round(Math.cos((i / 28) * Math.PI * 2) * (120 + (i % 5) * 28)),
   y: Math.round(Math.sin((i / 28) * Math.PI * 2) * (90 + (i % 4) * 26) - 40),
@@ -91,7 +91,7 @@ export default function Detail({
 
   function celebrate() {
     setBurst(Date.now())
-    setToast('New leader! Your vote just changed the meme.')
+    setToast('New headliner! Your vote just changed the meme.')
     setTimeout(() => setBurst(0), 1300)
   }
 
@@ -163,12 +163,12 @@ export default function Detail({
       <div className="c-detail">
         <div className="c-detail-meme">
           <Link href="/memes" className="c-back"><span aria-hidden="true">←</span> All memes</Link>
-          <div className="c-meme-wrap">
+          <div className="c-meme-wrap c-lit">
             <MemeImage
               url={meme.url}
               caption={shown?.content ?? ''}
               alt={meme.description}
-              label={isPreview ? 'Preview' : leaderScore > 0 ? 'Leading caption' : undefined}
+              label={isPreview ? 'Preview' : leaderScore > 0 ? 'Headliner' : undefined}
             />
             {burst > 0 && (
               <div className="c-confetti" key={burst} aria-hidden="true">
@@ -185,6 +185,7 @@ export default function Detail({
             <button className="c-btn c-btn-outline" onClick={download} disabled={!meme.url || downloading}>
               {downloading ? 'Preparing…' : 'Download meme'}
             </button>
+            <Link href="/memes/battle" className="c-btn c-btn-quiet">Play Battle mode</Link>
           </div>
           <details className="c-desc">
             <summary>What the AI saw</summary>
@@ -193,8 +194,8 @@ export default function Detail({
         </div>
 
         <section className="c-captions" aria-labelledby="captions-title">
-          <h1 id="captions-title">Pick the funniest caption</h1>
-          <p className="c-sub">Vote up or down. The top caption becomes the meme. Hover a caption to preview it.</p>
+          <h1 id="captions-title">The lineup</h1>
+          <p className="c-sub">Five captions, one photo. Vote up the funny ones and down the duds. The top caption becomes the meme. Hover any caption to try it on the photo.</p>
 
           <ol className="c-cap-list">
             {meme.captions.map((c) => {
@@ -213,7 +214,7 @@ export default function Detail({
                 >
                   <span className="c-rank" aria-label={`Rank ${rank}`}>{rank}</span>
                   <div className="c-cap-body">
-                    {leading && <span className="c-badge">Leading</span>}
+                    {leading && <span className="c-badge">Headliner</span>}
                     <p>{c.content}</p>
                   </div>
                   <div className="c-vote" role="group" aria-label={`Vote on: ${c.content}`}>

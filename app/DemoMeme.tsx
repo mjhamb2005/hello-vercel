@@ -1,5 +1,5 @@
 'use client'
-import { useEffect, useState } from 'react'
+import { useEffect, useState, type CSSProperties } from 'react'
 
 const DEMO = [
   { text: 'Me reading the AI captions at 2am', votes: 41 },
@@ -16,7 +16,7 @@ export default function DemoMeme() {
   }, [])
 
   return (
-    <div className="c-demo" aria-label="Example meme with three AI-written captions">
+    <div className="c-demo c-lit" aria-label="Example meme with three AI-written captions">
       <div className="c-meme c-demo-meme">
         <svg viewBox="0 0 400 300" role="img" aria-label="Three laughing emoji faces crying with laughter">
           <defs>
@@ -45,7 +45,7 @@ export default function DemoMeme() {
       </div>
       <ol className="c-demo-list">
         {DEMO.map((d, n) => (
-          <li key={d.text} className={n === i ? 'is-on' : ''}>
+          <li key={d.text} className={n === i ? 'is-on' : ''} style={{ '--w': `${Math.round((d.votes / 41) * 100)}%` } as CSSProperties}>
             <span>{d.text}</span>
             <b>{d.votes}</b>
           </li>

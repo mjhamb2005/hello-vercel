@@ -45,8 +45,11 @@ export default function Feed({
       <TopBar user={user} />
 
       <section className="c-hero">
-        <h1>Vote on the funniest caption.</h1>
-        <p>Every photo gets five AI-written captions. The crowd decides which one becomes the meme.</p>
+        <div>
+          <h1>Tonight’s lineup</h1>
+          <p>Every photo gets five AI-written captions. Vote for the funniest, and the winner becomes the meme.</p>
+        </div>
+        {memes.length > 0 && <Link href="/memes/battle" className="c-btn c-btn-outline">Play Battle mode</Link>}
       </section>
 
       {loadError && (
@@ -57,24 +60,29 @@ export default function Feed({
 
       {!loadError && memes.length === 0 && (
         <div className="c-empty">
-          <h2>Start the first meme</h2>
-          <p>Upload a photo and AI will write five captions for everyone to vote on.</p>
+          <h2>The stage is empty</h2>
+          <p>Upload a photo and AI writes five captions for everyone to vote on.</p>
           <button className="c-btn c-btn-primary" onClick={openMaker}>Make a meme</button>
         </div>
       )}
 
       {top && (
         <section className="c-spotlight" aria-labelledby="spotlight-title">
-          <Link href={`/memes/${top.meme.id}`} className="c-spotlight-meme" aria-label="Open the meme of the moment">
-            <MemeImage url={top.meme.url} caption={top.lead?.content ?? ''} alt={top.meme.description} />
-          </Link>
+          <div className="c-lit">
+            <Link href={`/memes/${top.meme.id}`} className="c-spotlight-meme" aria-label="Open the meme of the moment">
+              <MemeImage url={top.meme.url} caption={top.lead?.content ?? ''} alt={top.meme.description} />
+            </Link>
+          </div>
           <div className="c-spotlight-copy">
             <p className="c-kicker" id="spotlight-title">Meme of the moment</p>
-            <p className="c-spotlight-caption">“{top.lead?.content}”</p>
+            <p className="c-spotlight-caption">{top.lead?.content}</p>
             <p className="c-spotlight-score">
-              <b>{top.score}</b> {top.score === 1 ? 'vote' : 'votes'} ahead of the pack
+              <b>{top.score}</b> {top.score === 1 ? 'vote' : 'votes'} for the headliner
             </p>
-            <Link href={`/memes/${top.meme.id}`} className="c-btn c-btn-primary">Vote on this one</Link>
+            <div className="c-spotlight-actions">
+              <Link href={`/memes/${top.meme.id}`} className="c-btn c-btn-primary">Vote on all five</Link>
+              <Link href="/memes/battle" className="c-btn c-btn-outline">Battle mode</Link>
+            </div>
           </div>
         </section>
       )}
@@ -96,7 +104,7 @@ export default function Feed({
           >
             <MemeImage url={m.url} caption={lead?.content ?? ''} alt={m.description} />
             <div className="c-card-foot">
-              <span>{score > 0 ? `Leading caption: ${score} ${score === 1 ? 'vote' : 'votes'}` : 'No votes yet'}</span>
+              <span>{score > 0 ? <>Top caption has <b>{score}</b> {score === 1 ? 'vote' : 'votes'}</> : 'No votes yet. Be first.'}</span>
               <span className="c-card-cta">Vote <span aria-hidden="true">→</span></span>
             </div>
           </Link>

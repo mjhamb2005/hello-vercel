@@ -33,25 +33,14 @@ export default function ProfileForm({ firstName, lastName, photoUrl }: Props) {
       encType="multipart/form-data"
       onSubmit={() => setSaving(true)}
     >
-      <button
-        type="button"
-        className="hv-avatar-button"
-        onClick={() => fileInput.current?.click()}
-        aria-label="Change photo"
-      >
-        {preview ? (
-          <img src={preview} alt="" className="hv-avatar" />
-        ) : (
-          <div className="hv-avatar">{initials || '+'}</div>
-        )}
-      </button>
-      <button
-        type="button"
-        className="hv-link-button"
-        onClick={() => fileInput.current?.click()}
-      >
-        {preview ? 'Change photo' : 'Add a photo'}
-      </button>
+      <div className="c-photo">
+        <button type="button" className="c-photo-btn" onClick={() => fileInput.current?.click()} aria-label="Change photo">
+          {preview ? <img src={preview} alt="" className="c-photo-img" /> : <div className="c-photo-img">{initials || '+'}</div>}
+        </button>
+        <button type="button" className="c-link-btn" onClick={() => fileInput.current?.click()}>
+          {preview ? 'Change photo' : 'Add a photo'}
+        </button>
+      </div>
       <input
         ref={fileInput}
         type="file"
@@ -61,19 +50,19 @@ export default function ProfileForm({ firstName, lastName, photoUrl }: Props) {
         hidden
       />
 
-      <div className="hv-row">
-        <div className="hv-field">
-          <label className="hv-label" htmlFor="first_name">First name</label>
-          <input id="first_name" name="first_name" className="hv-input" defaultValue={firstName} required />
+      <div className="c-fields">
+        <div className="c-field">
+          <label htmlFor="first_name">First name</label>
+          <input id="first_name" name="first_name" defaultValue={firstName} required />
         </div>
-        <div className="hv-field">
-          <label className="hv-label" htmlFor="last_name">Last name</label>
-          <input id="last_name" name="last_name" className="hv-input" defaultValue={lastName} required />
+        <div className="c-field">
+          <label htmlFor="last_name">Last name</label>
+          <input id="last_name" name="last_name" defaultValue={lastName} required />
         </div>
       </div>
 
-      <button type="submit" className="hv-button" disabled={saving}>
-        {saving ? 'Saving…' : 'Save'}
+      <button type="submit" className="c-btn c-btn-primary" disabled={saving}>
+        {saving ? 'Saving…' : 'Save profile'}
       </button>
     </form>
   )
