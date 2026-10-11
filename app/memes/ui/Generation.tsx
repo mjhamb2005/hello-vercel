@@ -34,6 +34,8 @@ type Ctx = {
   start: (blob: Blob) => void
   created: Meme[]
   running: number
+  deleted: number[]
+  markDeleted: (id: number) => void
 }
 const GenerationContext = createContext<Ctx | null>(null)
 
@@ -54,6 +56,7 @@ async function post(url: string, body: unknown) {
 export function GenerationProvider({ children }: { children: ReactNode }) {
   const [jobs, setJobs] = useState<Job[]>([])
   const [created, setCreated] = useState<Meme[]>([])
+  const [deleted, setDeleted] = useState<number[]>([])
   const [makerOpen, setMakerOpen] = useState(false)
   const [userId, setUserId] = useState<string | null>(null)
   const pathname = usePathname()
@@ -85,7 +88,7 @@ export function GenerationProvider({ children }: { children: ReactNode }) {
         patch(id, { stage: 'writing', description: d.description })
 
         const c = await post('/api/captions', { path, description: d.description })
-        setCreated((list) => [{ ...c.meme, fresh: true }, ...list])
+        setCreated((list) => [{ ...c.meme, ownerId: user.id, fresh: true }, ...list])
         patch(id, { stage: 'done', meme: c.meme })
       } catch (e: any) {
         if (uploaded) await supabase.storage.from('memes').remove([path]) // no orphaned files
@@ -111,6 +114,13 @@ export function GenerationProvider({ children }: { children: ReactNode }) {
       if (j) URL.revokeObjectURL(j.preview)
       return list.filter((x) => x.id !== id)
     })
+  }, [])
+
+  // A deleted meme disappears everywhere: feed, new-meme list, and its finished card in the tray
+  const markDeleted = useCallback((id: number) => {
+    setDeleted((list) => (list.includes(id) ? list : [...list, id]))
+    setCreated((list) => list.filter((m) => m.id !== id))
+    setJobs((list) => list.filter((j) => j.meme?.id !== id))
   }, [])
 
   const openMaker = useCallback(async () => {
@@ -169,7 +179,7 @@ export function GenerationProvider({ children }: { children: ReactNode }) {
   const onMemePages = pathname?.startsWith('/memes') ?? false
 
   return (
-    <GenerationContext.Provider value={{ openMaker, start, created, running }}>
+    <GenerationContext.Provider value={{ openMaker, start, created, running, deleted, markDeleted }}>
       {children}
       <div className={`c-gen ${fontVars}`}>
         {userId && (

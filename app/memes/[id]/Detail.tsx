@@ -1,11 +1,14 @@
 'use client'
 import { useEffect, useState, type CSSProperties } from 'react'
 import Link from 'next/link'
+import { useRouter } from 'next/navigation'
 import { sbBrowser } from '@/lib/sb/browser'
 import { leaderOf, type Meme, type User } from '@/lib/types'
 import TopBar from '../ui/TopBar'
 import MemeImage, { captionSize } from '../ui/MemeImage'
 import { reauth } from '../ui/MakeMemeDialog'
+import DeleteMeme from '../ui/DeleteMeme'
+import { useGeneration } from '../ui/Generation'
 
 // Draw the photo plus caption onto a canvas and download it as a PNG
 async function downloadMeme(url: string, caption: string, id: number) {
@@ -81,6 +84,9 @@ export default function Detail({
   user: User
 }) {
   const supabase = sbBrowser()
+  const router = useRouter()
+  const { markDeleted } = useGeneration()
+  const isOwner = meme.ownerId === user.id
   const [scores, setScores] = useState(initialScores)
   const [votes, setVotes] = useState(initialVotes)
   const [pending, setPending] = useState<Record<number, boolean>>({})
@@ -186,6 +192,13 @@ export default function Detail({
               {downloading ? 'Preparing…' : 'Download meme'}
             </button>
             <Link href="/memes/battle" className="c-btn c-btn-quiet">Play Battle mode</Link>
+            {isOwner && (
+              <DeleteMeme
+                memeId={meme.id}
+                variant="button"
+                onDeleted={(id) => { markDeleted(id); router.replace('/memes') }}
+              />
+            )}
           </div>
           <details className="c-desc">
             <summary>What the AI saw</summary>

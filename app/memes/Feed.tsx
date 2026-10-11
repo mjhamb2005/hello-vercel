@@ -6,6 +6,7 @@ import { leaderOf, type Meme, type User } from '@/lib/types'
 import TopBar from './ui/TopBar'
 import MemeImage from './ui/MemeImage'
 import { useGeneration } from './ui/Generation'
+import DeleteMeme from './ui/DeleteMeme'
 
 export default function Feed({
   initialMemes,
@@ -18,12 +19,12 @@ export default function Feed({
   user: User
   loadError: string | null
 }) {
-  const { openMaker, created } = useGeneration()
+  const { openMaker, created, deleted, markDeleted } = useGeneration()
   // Memes finished in the background appear at the top, even if they were started on another page
   const memes = useMemo(() => {
     const have = new Set(initialMemes.map((m) => m.id))
-    return [...created.filter((m) => !have.has(m.id)), ...initialMemes]
-  }, [created, initialMemes])
+    return [...created.filter((m) => !have.has(m.id)), ...initialMemes].filter((m) => !deleted.includes(m.id))
+  }, [created, initialMemes, deleted])
 
   useEffect(() => {
     const { data } = sbBrowser().auth.onAuthStateChange((event: string) => {
@@ -96,18 +97,16 @@ export default function Feed({
 
       <section className="c-grid" aria-label="Memes">
         {rest.map(({ meme: m, lead, score }, i) => (
-          <Link
-            key={m.id}
-            href={`/memes/${m.id}`}
-            className={`c-card${m.fresh ? ' is-fresh' : ''}`}
-            style={{ '--i': Math.min(i, 9) } as CSSProperties}
-          >
-            <MemeImage url={m.url} caption={lead?.content ?? ''} alt={m.description} />
-            <div className="c-card-foot">
-              <span>{score > 0 ? <>Top caption has <b>{score}</b> {score === 1 ? 'vote' : 'votes'}</> : 'No votes yet. Be first.'}</span>
-              <span className="c-card-cta">Vote <span aria-hidden="true">→</span></span>
-            </div>
-          </Link>
+          <div key={m.id} className="c-card-wrap" style={{ '--i': Math.min(i, 9) } as CSSProperties}>
+            <Link href={`/memes/${m.id}`} className={`c-card${m.fresh ? ' is-fresh' : ''}`}>
+              <MemeImage url={m.url} caption={lead?.content ?? ''} alt={m.description} />
+              <div className="c-card-foot">
+                <span>{score > 0 ? <>Top caption has <b>{score}</b> {score === 1 ? 'vote' : 'votes'}</> : 'No votes yet. Be first.'}</span>
+                <span className="c-card-cta">Vote <span aria-hidden="true">→</span></span>
+              </div>
+            </Link>
+            {m.ownerId === user.id && <DeleteMeme memeId={m.id} variant="icon" onDeleted={markDeleted} />}
+          </div>
         ))}
       </section>
 

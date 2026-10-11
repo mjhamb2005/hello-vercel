@@ -40,6 +40,10 @@ body:has(.c-page) { margin: 0; background: #17111C; }
 .c-btn-outline:hover:not(:disabled) { border-color: var(--chalk); }
 .c-btn-quiet { background: transparent; color: var(--muted); padding: 11px 12px; }
 .c-btn-quiet:hover { color: var(--chalk); }
+.c-btn-danger { background: transparent; color: #FF8FA6; padding: 11px 12px; }
+.c-btn-danger:hover:not(:disabled) { color: #fff; background: rgba(194, 24, 63, .28); }
+.c-btn-solid-danger { background: var(--velvet); color: #fff; }
+.c-btn-solid-danger:hover:not(:disabled) { background: #D92A52; box-shadow: 0 0 0 6px rgba(194, 24, 63, .3); }
 .c-btn-lg { font-size: 17px; padding: 15px 26px; }
 .c-btn-sm { font-size: 14px; padding: 7px 14px; }
 .c-page :is(a, button, summary, input, .c-drop):focus-visible, .c-gen :is(a, button, .c-drop):focus-visible, .c-dialog .c-drop:focus-within {
@@ -171,7 +175,15 @@ kbd.c-key { display: inline-grid; place-items: center; min-width: 26px; height: 
 .c-spotlight-score b { color: var(--light); font-size: 24px; margin-right: 4px; font-variant-numeric: tabular-nums; }
 .c-spotlight-actions { display: flex; flex-wrap: wrap; gap: 10px; }
 .c-grid { max-width: 1240px; margin: 0 auto; padding: 8px clamp(16px, 4vw, 48px) 120px; columns: 300px; column-gap: 20px; }
-.c-card { display: block; break-inside: avoid; margin-bottom: 20px; background: var(--stage-2); border: 1px solid var(--line);
+.c-card-wrap { position: relative; break-inside: avoid; margin-bottom: 20px; }
+.c-card-del { position: absolute; top: 10px; right: 10px; z-index: 2; width: 38px; height: 38px; display: grid; place-items: center;
+  border: 1px solid rgba(255, 255, 255, .18); border-radius: 50%; background: rgba(23, 17, 28, .72); color: var(--chalk); cursor: pointer;
+  -webkit-backdrop-filter: blur(6px); backdrop-filter: blur(6px); opacity: 0; transform: scale(.9);
+  transition: opacity .15s, transform .15s, background .15s, color .15s; }
+.c-card-wrap:hover .c-card-del, .c-card-del:focus-visible { opacity: 1; transform: none; }
+.c-card-del:hover { background: var(--velvet); border-color: var(--velvet); color: #fff; }
+@media (hover: none) { .c-card-del { opacity: 1; transform: none; } }
+.c-card { display: block; background: var(--stage-2); border: 1px solid var(--line);
   border-radius: var(--r); overflow: hidden; color: var(--chalk); text-decoration: none; transition: border-color .2s, transform .2s; }
 .c-card:hover { border-color: rgba(255, 210, 90, .55); transform: translateY(-3px); }
 .c-card.is-fresh { animation: c-drop-in .7s cubic-bezier(.2, 1.2, .3, 1) both; border-color: var(--light); }
@@ -314,7 +326,7 @@ kbd.c-key { display: inline-grid; place-items: center; min-width: 26px; height: 
 .c-field input:focus { border-color: var(--light); outline: none; }
 
 /* ---------- Make-a-meme dialog ---------- */
-.c-dialog { width: min(640px, calc(100vw - 32px)); max-height: calc(100vh - 32px); border: 1px solid var(--line-2); border-radius: var(--r-lg);
+.c-dialog { margin: auto; width: min(640px, calc(100vw - 32px)); max-height: calc(100vh - 32px); border: 1px solid var(--line-2); border-radius: var(--r-lg);
   padding: 24px clamp(18px, 4vw, 30px) 28px; background: var(--stage-2); color: var(--chalk); box-shadow: 0 40px 100px rgba(0, 0, 0, .6);
   font-family: var(--c-sans), system-ui, sans-serif; }
 .c-dialog::backdrop { background: rgba(10, 6, 12, .72); -webkit-backdrop-filter: blur(4px); backdrop-filter: blur(4px); }
@@ -331,6 +343,11 @@ kbd.c-key { display: inline-grid; place-items: center; min-width: 26px; height: 
 .c-drop-icon { width: 52px; height: 52px; display: grid; place-items: center; border-radius: 50%; background: var(--light); color: #1B1206; font-size: 28px; font-weight: 700; }
 .c-drop strong { font-size: 18px; }
 .c-drop span:last-child { color: var(--muted); font-size: 15px; max-width: 40ch; line-height: 1.5; }
+
+.c-confirm { width: min(440px, calc(100vw - 32px)); }
+.c-confirm h2 { margin: 0; font-size: 30px; font-stretch: 78%; font-weight: 800; }
+.c-confirm p { margin: 10px 0 0; color: var(--muted); font-size: 16px; line-height: 1.5; }
+.c-confirm-actions { display: flex; justify-content: flex-end; flex-wrap: wrap; gap: 10px; margin-top: 24px; }
 
 /* ---------- Background generation tray ---------- */
 .c-tray { position: fixed; right: 20px; bottom: 20px; z-index: 50; width: min(360px, calc(100vw - 32px));

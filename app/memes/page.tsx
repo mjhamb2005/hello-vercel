@@ -15,7 +15,7 @@ export default async function MemesPage() {
   const [imagesRes, scoresRes] = await Promise.all([
     supabase
       .from('meme_images')
-      .select('id, storage_path, description, created_at, meme_captions(id, content)')
+      .select('id, user_id, storage_path, description, created_at, meme_captions(id, content)')
       .order('created_at', { ascending: false })
       .limit(60),
     supabase.rpc('meme_caption_scores'),
@@ -36,6 +36,7 @@ export default async function MemesPage() {
     id: i.id,
     url: urlByPath.get(i.storage_path) ?? null,
     description: i.description,
+    ownerId: i.user_id,
     captions: [...(i.meme_captions ?? [])].sort((a: any, b: any) => a.id - b.id),
   }))
 

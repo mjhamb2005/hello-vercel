@@ -17,7 +17,7 @@ export default async function MemePage({ params }: { params: Promise<{ id: strin
 
   const { data: image } = await supabase
     .from('meme_images')
-    .select('id, storage_path, description, meme_captions(id, content)')
+    .select('id, user_id, storage_path, description, meme_captions(id, content)')
     .eq('id', memeId)
     .maybeSingle()
   if (!image) notFound()
@@ -42,7 +42,7 @@ export default async function MemePage({ params }: { params: Promise<{ id: strin
   return (
     <main className={`c-page ${fontVars}`}>
       <Detail
-        meme={{ id: image.id, url: signedRes.data?.signedUrl ?? null, description: image.description, captions }}
+        meme={{ id: image.id, url: signedRes.data?.signedUrl ?? null, description: image.description, captions, ownerId: (image as any).user_id }}
         initialScores={scores}
         initialVotes={myVotes}
         user={{ id: user.id, name: meta.full_name ?? meta.name ?? '', avatar: meta.avatar_url ?? meta.picture ?? null }}
