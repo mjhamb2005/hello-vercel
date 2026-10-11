@@ -40,7 +40,7 @@ body:has(.c-page) { margin: 0; background: #17111C; }
 .c-btn-outline:hover:not(:disabled) { border-color: var(--chalk); }
 .c-btn-quiet { background: transparent; color: var(--muted); padding: 11px 12px; }
 .c-btn-quiet:hover { color: var(--chalk); }
-.c-btn-danger { background: transparent; color: #FF8FA6; padding: 11px 12px; }
+.c-btn-danger { background: transparent; color: #FF8FA6; border-color: rgba(255, 143, 166, .35); }
 .c-btn-danger:hover:not(:disabled) { color: #fff; background: rgba(194, 24, 63, .28); }
 .c-btn-solid-danger { background: var(--velvet); color: #fff; }
 .c-btn-solid-danger:hover:not(:disabled) { background: #D92A52; box-shadow: 0 0 0 6px rgba(194, 24, 63, .3); }
@@ -124,7 +124,16 @@ kbd.c-key { display: inline-grid; place-items: center; min-width: 26px; height: 
 .c-section-head { --pad: clamp(16px, 4vw, 48px); max-width: 1240px; margin: 0 auto 18px; padding: 28px var(--pad) 0; display: flex; align-items: baseline;
   justify-content: space-between; background: linear-gradient(var(--line), var(--line)) top center / calc(100% - 2 * var(--pad)) 1px no-repeat; }
 .c-section-head h2 { margin: 0; font-size: 30px; }
-.c-section-head span { color: var(--dim); font-size: 15px; }
+.c-filter { display: inline-flex; gap: 4px; padding: 4px; border-radius: 999px; background: var(--stage-2); border: 1px solid var(--line); }
+.c-filter button { display: inline-flex; align-items: center; gap: 8px; padding: 8px 16px; border: none; border-radius: 999px; background: transparent;
+  color: var(--muted); font: 700 15px var(--c-sans), sans-serif; cursor: pointer; transition: background .15s, color .15s; }
+.c-filter button:hover:not(:disabled) { color: var(--chalk); }
+.c-filter button:disabled { opacity: .45; cursor: default; }
+.c-filter button.is-on { background: var(--chalk); color: var(--stage); }
+.c-filter button span { min-width: 22px; padding: 1px 7px; border-radius: 999px; background: var(--stage-3); color: var(--chalk); font-size: 12px; font-variant-numeric: tabular-nums; }
+.c-filter button.is-on span { background: var(--stage); color: var(--light); }
+.c-section-head > span { color: var(--dim); font-size: 15px; }
+.c-section-head { flex-wrap: wrap; gap: 12px; align-items: center; }
 .c-empty { max-width: 520px; margin: 24px auto 96px; padding: 48px 28px; text-align: center; background: var(--stage-2);
   border: 1.5px dashed var(--line-2); border-radius: var(--r); }
 .c-empty h2 { margin: 0 0 8px; font-size: 32px; }
@@ -176,13 +185,13 @@ kbd.c-key { display: inline-grid; place-items: center; min-width: 26px; height: 
 .c-spotlight-actions { display: flex; flex-wrap: wrap; gap: 10px; }
 .c-grid { max-width: 1240px; margin: 0 auto; padding: 8px clamp(16px, 4vw, 48px) 120px; columns: 300px; column-gap: 20px; }
 .c-card-wrap { position: relative; break-inside: avoid; margin-bottom: 20px; }
-.c-card-del { position: absolute; top: 10px; right: 10px; z-index: 2; width: 38px; height: 38px; display: grid; place-items: center;
-  border: 1px solid rgba(255, 255, 255, .18); border-radius: 50%; background: rgba(23, 17, 28, .72); color: var(--chalk); cursor: pointer;
-  -webkit-backdrop-filter: blur(6px); backdrop-filter: blur(6px); opacity: 0; transform: scale(.9);
-  transition: opacity .15s, transform .15s, background .15s, color .15s; }
-.c-card-wrap:hover .c-card-del, .c-card-del:focus-visible { opacity: 1; transform: none; }
+.c-card-del { position: absolute; top: 10px; right: 10px; z-index: 2; display: inline-flex; align-items: center; gap: 6px;
+  padding: 6px 11px 6px 9px; border: 1px solid rgba(255, 255, 255, .2); border-radius: 999px; background: rgba(23, 17, 28, .78);
+  color: var(--chalk); font: 700 13px var(--c-sans), sans-serif; cursor: pointer; -webkit-backdrop-filter: blur(6px); backdrop-filter: blur(6px);
+  transition: background .15s, border-color .15s, color .15s; }
 .c-card-del:hover { background: var(--velvet); border-color: var(--velvet); color: #fff; }
-@media (hover: none) { .c-card-del { opacity: 1; transform: none; } }
+.c-card-wrap.is-leaving, .c-spotlight.is-leaving { animation: c-leave .28s ease-in forwards; pointer-events: none; }
+@keyframes c-leave { to { opacity: 0; transform: scale(.94); } }
 .c-card { display: block; background: var(--stage-2); border: 1px solid var(--line);
   border-radius: var(--r); overflow: hidden; color: var(--chalk); text-decoration: none; transition: border-color .2s, transform .2s; }
 .c-card:hover { border-color: rgba(255, 210, 90, .55); transform: translateY(-3px); }
@@ -345,6 +354,10 @@ kbd.c-key { display: inline-grid; place-items: center; min-width: 26px; height: 
 .c-drop span:last-child { color: var(--muted); font-size: 15px; max-width: 40ch; line-height: 1.5; }
 
 .c-confirm { width: min(440px, calc(100vw - 32px)); }
+.c-confirm-thumb { width: 132px; margin-bottom: 18px; }
+.c-confirm-thumb .c-meme { border-radius: var(--r-sm); box-shadow: 0 10px 30px rgba(0, 0, 0, .45); }
+.c-confirm-thumb .c-meme-text { animation: none; }
+.c-confirm-thumb .c-meme img { aspect-ratio: 4 / 3; object-fit: cover; }
 .c-confirm h2 { margin: 0; font-size: 30px; font-stretch: 78%; font-weight: 800; }
 .c-confirm p { margin: 10px 0 0; color: var(--muted); font-size: 16px; line-height: 1.5; }
 .c-confirm-actions { display: flex; justify-content: flex-end; flex-wrap: wrap; gap: 10px; margin-top: 24px; }

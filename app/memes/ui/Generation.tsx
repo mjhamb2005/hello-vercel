@@ -36,6 +36,7 @@ type Ctx = {
   running: number
   deleted: number[]
   markDeleted: (id: number) => void
+  notify: (message: string) => void
 }
 const GenerationContext = createContext<Ctx | null>(null)
 
@@ -57,6 +58,7 @@ export function GenerationProvider({ children }: { children: ReactNode }) {
   const [jobs, setJobs] = useState<Job[]>([])
   const [created, setCreated] = useState<Meme[]>([])
   const [deleted, setDeleted] = useState<number[]>([])
+  const [toast, setToast] = useState('')
   const [makerOpen, setMakerOpen] = useState(false)
   const [userId, setUserId] = useState<string | null>(null)
   const pathname = usePathname()
@@ -116,7 +118,14 @@ export function GenerationProvider({ children }: { children: ReactNode }) {
     })
   }, [])
 
-  // A deleted meme disappears everywhere: feed, new-meme list, and its finished card in the tray
+  const notify = useCallback((message: string) => setToast(message), [])
+  useEffect(() => {
+    if (!toast) return
+    const t = setTimeout(() => setToast(''), 3500)
+    return () => clearTimeout(t)
+  }, [toast])
+
+  // A deleted meme disappears everywhere: feed, spotlight, Top captions, Battle, and its card in the tray
   const markDeleted = useCallback((id: number) => {
     setDeleted((list) => (list.includes(id) ? list : [...list, id]))
     setCreated((list) => list.filter((m) => m.id !== id))
@@ -179,7 +188,7 @@ export function GenerationProvider({ children }: { children: ReactNode }) {
   const onMemePages = pathname?.startsWith('/memes') ?? false
 
   return (
-    <GenerationContext.Provider value={{ openMaker, start, created, running, deleted, markDeleted }}>
+    <GenerationContext.Provider value={{ openMaker, start, created, running, deleted, markDeleted, notify }}>
       {children}
       <div className={`c-gen ${fontVars}`}>
         {userId && (
@@ -192,6 +201,7 @@ export function GenerationProvider({ children }: { children: ReactNode }) {
             }}
           />
         )}
+        {toast && <div className="c-toast" role="status">{toast}</div>}
         {onMemePages && jobs.length > 0 && (
           <Tray jobs={jobs} onDismiss={dismiss} onRetry={(j) => run(j.id, j.blob)} onSeen={(id) => patch(id, { seen: true })} />
         )}

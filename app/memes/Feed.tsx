@@ -1,6 +1,7 @@
 'use client'
-import { useEffect, useMemo, type CSSProperties } from 'react'
+import { useCallback, useEffect, useMemo, useState, type CSSProperties } from 'react'
 import Link from 'next/link'
+import { useRouter } from 'next/navigation'
 import { sbBrowser } from '@/lib/sb/browser'
 import { leaderOf, type Meme, type User } from '@/lib/types'
 import TopBar from './ui/TopBar'
@@ -19,12 +20,18 @@ export default function Feed({
   user: User
   loadError: string | null
 }) {
-  const { openMaker, created, deleted, markDeleted } = useGeneration()
-  // Memes finished in the background appear at the top, even if they were started on another page
+  const router = useRouter()
+  const { openMaker, created, deleted, markDeleted, notify } = useGeneration()
+  const [view, setView] = useState<'all' | 'mine'>('all')
+  const [leaving, setLeaving] = useState<number[]>([])
+
+  // Memes finished in the background appear at the top, even if they were started on another page.
+  // Deleted memes are gone from every list, including the meme of the moment.
   const memes = useMemo(() => {
     const have = new Set(initialMemes.map((m) => m.id))
     return [...created.filter((m) => !have.has(m.id)), ...initialMemes].filter((m) => !deleted.includes(m.id))
   }, [created, initialMemes, deleted])
+  const mine = memes.filter((m) => m.ownerId === user.id)
 
   useEffect(() => {
     const { data } = sbBrowser().auth.onAuthStateChange((event: string) => {
@@ -33,13 +40,35 @@ export default function Feed({
     return () => data.subscription.unsubscribe()
   }, [])
 
-  // "Meme of the moment": the meme whose leading caption has the most votes
-  const scored = memes.map((m) => {
+  // If you delete your last meme while viewing "Your memes", go back to everyone's
+  useEffect(() => {
+    if (view === 'mine' && mine.length === 0 && leaving.length === 0) setView('all')
+  }, [view, mine.length, leaving.length])
+
+  // Card fades out first, then the meme is removed everywhere and the page re-fetches fresh data
+  const onDeleted = useCallback(
+    (id: number) => {
+      setLeaving((l) => [...l, id])
+      notify('Meme deleted.')
+      setTimeout(() => {
+        markDeleted(id)
+        setLeaving((l) => l.filter((x) => x !== id))
+        router.refresh()
+      }, 280)
+    },
+    [markDeleted, notify, router]
+  )
+
+  const shownList = view === 'mine' ? mine : memes
+  const scored = shownList.map((m) => {
     const lead = leaderOf(m.captions, scores)
     return { meme: m, lead, score: lead ? scores[lead.id] ?? 0 : 0 }
   })
-  const top = scored.reduce<(typeof scored)[number] | null>((best, s) => (s.score > (best?.score ?? 0) ? s : best), null)
+  // "Meme of the moment": the meme whose leading caption has the most votes (everyone's view only)
+  const top =
+    view === 'all' ? scored.reduce<(typeof scored)[number] | null>((best, s) => (s.score > (best?.score ?? 0) ? s : best), null) : null
   const rest = scored.filter((s) => s.meme.id !== top?.meme.id)
+  const preview = (m: Meme, caption: string) => ({ url: m.url, caption, alt: m.description })
 
   return (
     <>
@@ -68,7 +97,7 @@ export default function Feed({
       )}
 
       {top && (
-        <section className="c-spotlight" aria-labelledby="spotlight-title">
+        <section className={`c-spotlight${leaving.includes(top.meme.id) ? ' is-leaving' : ''}`} aria-labelledby="spotlight-title">
           <div className="c-lit">
             <Link href={`/memes/${top.meme.id}`} className="c-spotlight-meme" aria-label="Open the meme of the moment">
               <MemeImage url={top.meme.url} caption={top.lead?.content ?? ''} alt={top.meme.description} />
@@ -83,33 +112,45 @@ export default function Feed({
             <div className="c-spotlight-actions">
               <Link href={`/memes/${top.meme.id}`} className="c-btn c-btn-primary">Vote on all five</Link>
               <Link href="/memes/battle" className="c-btn c-btn-outline">Battle mode</Link>
+              {top.meme.ownerId === user.id && (
+                <DeleteMeme memeId={top.meme.id} preview={preview(top.meme, top.lead?.content ?? '')} variant="button" onDeleted={onDeleted} />
+              )}
             </div>
           </div>
         </section>
       )}
 
-      {rest.length > 0 && (
+      {memes.length > 0 && (
         <div className="c-section-head">
-          <h2>Latest</h2>
-          <span>{memes.length} {memes.length === 1 ? 'meme' : 'memes'}</span>
+          <div className="c-filter" role="tablist" aria-label="Which memes to show">
+            <button role="tab" aria-selected={view === 'all'} className={view === 'all' ? 'is-on' : ''} onClick={() => setView('all')}>
+              Everyone’s <span>{memes.length}</span>
+            </button>
+            <button role="tab" aria-selected={view === 'mine'} className={view === 'mine' ? 'is-on' : ''} onClick={() => setView('mine')} disabled={mine.length === 0}>
+              Your memes <span>{mine.length}</span>
+            </button>
+          </div>
+          <span>{view === 'mine' ? 'Only you can delete your memes.' : 'Newest first'}</span>
         </div>
       )}
 
-      <section className="c-grid" aria-label="Memes">
-        {rest.map(({ meme: m, lead, score }, i) => (
-          <div key={m.id} className="c-card-wrap" style={{ '--i': Math.min(i, 9) } as CSSProperties}>
-            <Link href={`/memes/${m.id}`} className={`c-card${m.fresh ? ' is-fresh' : ''}`}>
-              <MemeImage url={m.url} caption={lead?.content ?? ''} alt={m.description} />
-              <div className="c-card-foot">
-                <span>{score > 0 ? <>Top caption has <b>{score}</b> {score === 1 ? 'vote' : 'votes'}</> : 'No votes yet. Be first.'}</span>
-                <span className="c-card-cta">Vote <span aria-hidden="true">→</span></span>
-              </div>
-            </Link>
-            {m.ownerId === user.id && <DeleteMeme memeId={m.id} variant="icon" onDeleted={markDeleted} />}
-          </div>
-        ))}
+      <section className="c-grid" aria-label={view === 'mine' ? 'Your memes' : 'Memes'}>
+        {rest.map(({ meme: m, lead, score }, i) => {
+          const own = m.ownerId === user.id
+          return (
+            <div key={m.id} className={`c-card-wrap${leaving.includes(m.id) ? ' is-leaving' : ''}`} style={{ '--i': Math.min(i, 9) } as CSSProperties}>
+              <Link href={`/memes/${m.id}`} className={`c-card${m.fresh ? ' is-fresh' : ''}`}>
+                <MemeImage url={m.url} caption={lead?.content ?? ''} alt={m.description} label={own ? 'Yours' : undefined} />
+                <div className="c-card-foot">
+                  <span>{score > 0 ? <>Top caption has <b>{score}</b> {score === 1 ? 'vote' : 'votes'}</> : 'No votes yet. Be first.'}</span>
+                  <span className="c-card-cta">Vote <span aria-hidden="true">→</span></span>
+                </div>
+              </Link>
+              {own && <DeleteMeme memeId={m.id} preview={preview(m, lead?.content ?? '')} variant="chip" onDeleted={onDeleted} />}
+            </div>
+          )
+        })}
       </section>
-
     </>
   )
 }

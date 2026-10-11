@@ -6,6 +6,7 @@ import type { Caption, Meme, User } from '@/lib/types'
 import TopBar from '../ui/TopBar'
 import MemeImage from '../ui/MemeImage'
 import { reauth } from '../ui/MakeMemeDialog'
+import { useGeneration } from '../ui/Generation'
 
 type Round = { meme: Meme; a: Caption; b: Caption }
 
@@ -38,8 +39,14 @@ export default function Battle({ memes, initialVotes, user }: { memes: Meme[]; i
   const [streak, setStreak] = useState(0)
   const [toast, setToast] = useState('')
 
-  // Shuffle on the client only, so server and browser render the same first frame
-  useEffect(() => setRounds(buildRounds(memes, initialVotes)), [memes, initialVotes])
+  // Shuffle on the client only, so server and browser render the same first frame.
+  // Memes you deleted this session never show up as a round.
+  const { deleted } = useGeneration()
+  useEffect(() => {
+    setRounds(buildRounds(memes.filter((m) => !deleted.includes(m.id)), initialVotes))
+    // deleted is read once at load; rounds aren't reshuffled mid-game
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [memes, initialVotes])
 
   useEffect(() => {
     if (!toast) return
@@ -114,7 +121,7 @@ export default function Battle({ memes, initialVotes, user }: { memes: Meme[]; i
   }, [rounds, index])
 
   const remaining = Math.max(0, rounds.length - index)
-  const restart = () => { setRounds(buildRounds(memes, {})); setIndex(0); setStreak(0) }
+  const restart = () => { setRounds(buildRounds(memes.filter((m) => !deleted.includes(m.id)), {})); setIndex(0); setStreak(0) }
 
   const pick = (side: 'a' | 'b', label: string, key: string) => {
     if (!round) return null

@@ -3,10 +3,13 @@ import Link from 'next/link'
 import type { User } from '@/lib/types'
 import TopBar from '../ui/TopBar'
 import MemeImage from '../ui/MemeImage'
+import { useGeneration } from '../ui/Generation'
 
 export type Row = { captionId: number; memeId: number; caption: string; score: number; url: string | null; description: string }
 
-export default function TopList({ rows, user }: { rows: Row[]; user: User }) {
+export default function TopList({ rows: allRows, user }: { rows: Row[]; user: User }) {
+  const { deleted } = useGeneration()
+  const rows = allRows.filter((r) => !deleted.includes(r.memeId))
 
   return (
     <>

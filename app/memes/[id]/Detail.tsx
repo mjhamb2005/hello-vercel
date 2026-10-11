@@ -85,7 +85,7 @@ export default function Detail({
 }) {
   const supabase = sbBrowser()
   const router = useRouter()
-  const { markDeleted } = useGeneration()
+  const { markDeleted, notify } = useGeneration()
   const isOwner = meme.ownerId === user.id
   const [scores, setScores] = useState(initialScores)
   const [votes, setVotes] = useState(initialVotes)
@@ -195,8 +195,9 @@ export default function Detail({
             {isOwner && (
               <DeleteMeme
                 memeId={meme.id}
+                preview={{ url: meme.url, caption: leader?.content ?? '', alt: meme.description }}
                 variant="button"
-                onDeleted={(id) => { markDeleted(id); router.replace('/memes') }}
+                onDeleted={(id) => { markDeleted(id); notify('Meme deleted.'); router.replace('/memes') }}
               />
             )}
           </div>
