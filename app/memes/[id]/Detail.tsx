@@ -1,5 +1,5 @@
 'use client'
-import { useEffect, useState, type CSSProperties } from 'react'
+import { useEffect, useLayoutEffect, useRef, useState, type CSSProperties } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { sbBrowser } from '@/lib/sb/browser'
@@ -9,6 +9,7 @@ import MemeImage, { captionSize } from '../ui/MemeImage'
 import { reauth } from '../ui/MakeMemeDialog'
 import DeleteMeme from '../ui/DeleteMeme'
 import { useGeneration } from '../ui/Generation'
+import { reportError } from '@/lib/report'
 
 // Draw the photo plus caption onto a canvas and download it as a PNG
 async function downloadMeme(url: string, caption: string, id: number) {
@@ -119,6 +120,28 @@ export default function Detail({
   const shown = meme.captions.find((c) => c.id === preview) ?? leader
   const isPreview = preview !== null && preview !== leader?.id
 
+  // The lineup always reads 1 to 5 from the top: most votes first, ties keep the AI's original order
+  const ordered = [...meme.captions].sort((a, b) => (scores[b.id] ?? 0) - (scores[a.id] ?? 0) || a.id - b.id)
+  const orderKey = ordered.map((c) => c.id).join(',')
+
+  // When a vote changes the order, slide each caption from its old spot to its new one
+  const rowRefs = useRef(new Map<number, HTMLLIElement>())
+  const lastTops = useRef(new Map<number, number>())
+  useLayoutEffect(() => {
+    const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches
+    rowRefs.current.forEach((el, id) => {
+      const top = el.getBoundingClientRect().top
+      const prev = lastTops.current.get(id)
+      lastTops.current.set(id, top)
+      if (reduce || prev === undefined || Math.abs(prev - top) < 1) return
+      el.style.transition = 'none'
+      el.style.transform = `translateY(${prev - top}px)`
+      el.getBoundingClientRect() // apply the jump before animating back
+      el.style.transition = 'transform .45s cubic-bezier(.2, .9, .25, 1)'
+      el.style.transform = ''
+    })
+  }, [orderKey])
+
   async function vote(captionId: number, value: 1 | -1) {
     if (pending[captionId]) return
     const prev = votes[captionId] ?? 0
@@ -146,6 +169,7 @@ export default function Detail({
       setVotes((v) => ({ ...v, [captionId]: prev }))
       setScores((s) => ({ ...s, [captionId]: (s[captionId] ?? 0) - next + prev }))
       if (/jwt|auth|401/i.test(error.message)) return reauth()
+      reportError('vote', error.message, { memeId: meme.id, captionId, value: next })
       setToast('Your vote didn’t save. Try again.')
     }
   }
@@ -155,7 +179,8 @@ export default function Detail({
     setDownloading(true)
     try {
       await downloadMeme(meme.url, leader?.content ?? shown.content, meme.id)
-    } catch {
+    } catch (e) {
+      reportError('download', e, { memeId: meme.id })
       setToast('Couldn’t create the download. Refresh and try again.')
     } finally {
       setDownloading(false)
@@ -209,17 +234,18 @@ export default function Detail({
 
         <section className="c-captions" aria-labelledby="captions-title">
           <h1 id="captions-title">The lineup</h1>
-          <p className="c-sub">Five captions, one photo. Vote up the funny ones and down the duds. The top caption becomes the meme. Hover any caption to try it on the photo.</p>
+          <p className="c-sub">Five captions, ranked by votes. Vote up the funny ones and down the duds, and the top caption becomes the meme. Hover any caption to try it on the photo.</p>
 
           <ol className="c-cap-list">
-            {meme.captions.map((c) => {
+            {ordered.map((c, i) => {
               const score = scores[c.id] ?? 0
-              const rank = 1 + meme.captions.filter((o) => (scores[o.id] ?? 0) > score).length
+              const rank = i + 1
               const mine = votes[c.id] ?? 0
               const leading = c.id === leader?.id && score > 0
               return (
                 <li
                   key={c.id}
+                  ref={(el) => { if (el) rowRefs.current.set(c.id, el); else rowRefs.current.delete(c.id) }}
                   className={`c-cap${leading ? ' is-leading' : ''}${preview === c.id ? ' is-preview' : ''}`}
                   onMouseEnter={() => setPreview(c.id)}
                   onMouseLeave={() => setPreview(null)}

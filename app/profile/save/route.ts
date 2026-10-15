@@ -38,7 +38,8 @@ export async function POST(request: Request) {
 
     if (uploadError) {
       console.error('Upload error:', uploadError.message)
-      return NextResponse.redirect(`${origin}/profile`, 303)
+      await logProfileError(supabase, user, 'Photo upload failed', uploadError.message)
+      return NextResponse.redirect(`${origin}/profile?error=photo`, 303)
     }
 
     const { data } = admin.storage.from('avatars').getPublicUrl(path)
@@ -48,7 +49,26 @@ export async function POST(request: Request) {
 
   // 4. Save name (and photo link) into the profiles table
   const { error } = await supabase.from('profiles').update(updates).eq('id', user.id)
-  if (error) console.error('Save error:', error.message)
+  if (error) {
+    console.error('Save error:', error.message)
+    await logProfileError(supabase, user, 'Profile save failed', error.message)
+    return NextResponse.redirect(`${origin}/profile?error=save`, 303)
+  }
 
   return NextResponse.redirect(`${origin}/memes`, 303)
+}
+// Profile saves happen on the server, so they're logged from here (the browser never sees the error)
+async function logProfileError(supabase: any, user: { id: string; email?: string | null }, message: string, detail: string) {
+  try {
+    await supabase.from('app_errors').insert({
+      user_id: user.id,
+      user_email: user.email ?? null,
+      page: '/profile',
+      action: 'profile',
+      message,
+      details: { detail },
+    })
+  } catch {
+    // logging must never block the redirect
+  }
 }

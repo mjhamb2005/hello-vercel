@@ -31,6 +31,9 @@ export default function TopBar({ user }: { user: User }) {
           Make a meme
           {running > 0 && <span className="c-running" aria-label={`${running} in progress`}>{running}</span>}
         </button>
+        {user.isAdmin && (
+          <Link href="/admin/errors" className={`c-btn c-btn-quiet c-admin-link${pathname === '/admin/errors' ? ' is-active' : ''}`}>Error log</Link>
+        )}
         <Link href="/profile" className="c-avatar" aria-label="Your profile">
           {user.avatar ? <img src={user.avatar} alt="" referrerPolicy="no-referrer" /> : <span>{initial}</span>}
         </Link>

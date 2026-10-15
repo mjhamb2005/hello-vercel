@@ -1,6 +1,7 @@
 import { redirect } from 'next/navigation'
 import { sbServer } from '@/lib/sb/server'
 import { fontVars } from '@/lib/fonts'
+import { getViewer } from '@/lib/viewer'
 import type { Meme } from '@/lib/types'
 import Feed from './Feed'
 import '../memes.css'
@@ -40,13 +41,12 @@ export default async function MemesPage() {
     captions: [...(i.meme_captions ?? [])].sort((a: any, b: any) => a.id - b.id),
   }))
 
-  const meta = user.user_metadata ?? {}
   return (
     <main className={`c-page ${fontVars}`}>
       <Feed
         initialMemes={memes}
         scores={scores}
-        user={{ id: user.id, name: meta.full_name ?? meta.name ?? '', avatar: meta.avatar_url ?? meta.picture ?? null }}
+        user={await getViewer(supabase, user)}
         loadError={imagesRes.error?.message ?? null}
       />
     </main>

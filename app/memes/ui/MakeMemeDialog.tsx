@@ -1,5 +1,6 @@
 'use client'
 import { useEffect, useRef, useState, type DragEvent } from 'react'
+import { reportError } from '@/lib/report'
 
 // If the session is gone, reload: the proxy sends them to sign in and back here afterwards
 export const reauth = () => window.location.reload()
@@ -57,7 +58,8 @@ export default function MakeMemeDialog({
     setReading(true)
     try {
       onPicked(await toJpeg(file))
-    } catch {
+    } catch (e) {
+      reportError('upload', e, { step: 'reading the photo', type: file.type, sizeKb: Math.round(file.size / 1024) })
       setError('Your browser can’t read this image format. Try a JPG or PNG.')
     } finally {
       setReading(false)

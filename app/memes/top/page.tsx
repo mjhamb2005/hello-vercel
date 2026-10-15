@@ -1,6 +1,7 @@
 import { redirect } from 'next/navigation'
 import { sbServer } from '@/lib/sb/server'
 import { fontVars } from '@/lib/fonts'
+import { getViewer } from '@/lib/viewer'
 import TopList, { type Row } from './TopList'
 import '../../memes.css'
 
@@ -48,12 +49,11 @@ export default async function TopPage() {
     })
     .filter(Boolean) as Row[]
 
-  const meta = user.user_metadata ?? {}
   return (
     <main className={`c-page ${fontVars}`}>
       <TopList
         rows={rows}
-        user={{ id: user.id, name: meta.full_name ?? meta.name ?? '', avatar: meta.avatar_url ?? meta.picture ?? null }}
+        user={await getViewer(supabase, user)}
       />
     </main>
   )

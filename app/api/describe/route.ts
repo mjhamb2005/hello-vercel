@@ -17,7 +17,7 @@ export async function POST(request: Request) {
   }
 
   const { data: file, error } = await supabase.storage.from('memes').download(path)
-  if (error || !file) return NextResponse.json({ error: 'We couldn’t find your upload. Try again.' }, { status: 404 })
+  if (error || !file) return NextResponse.json({ error: 'We couldn’t find your upload. Try again.', detail: error?.message ?? 'file missing' }, { status: 404 })
 
   try {
     const description = await describeImage(Buffer.from(await file.arrayBuffer()).toString('base64'))
@@ -25,6 +25,6 @@ export async function POST(request: Request) {
     return NextResponse.json({ description: description.slice(0, 2000) })
   } catch (e) {
     console.error('describe failed', e)
-    return NextResponse.json({ error: 'The AI couldn’t read this photo. Try again in a minute.' }, { status: 502 })
+    return NextResponse.json({ error: 'The AI couldn’t read this photo. Try again in a minute.', detail: String((e as any)?.message ?? e).slice(0, 500) }, { status: 502 })
   }
 }

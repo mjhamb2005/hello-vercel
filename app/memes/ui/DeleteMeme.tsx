@@ -2,6 +2,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { sbBrowser } from '@/lib/sb/browser'
 import { reauth } from './MakeMemeDialog'
+import { reportError } from '@/lib/report'
 import MemeImage from './MemeImage'
 
 // Deletes the meme row (its captions and votes go with it via ON DELETE CASCADE),
@@ -61,6 +62,7 @@ export default function DeleteMeme({
       onDeleted(memeId)
     } catch (e: any) {
       if (e?.message === 'AUTH') return reauth()
+      reportError('delete', e, { memeId })
       setError(e?.message || 'The meme didn’t delete. Try again.')
     } finally {
       setBusy(false)

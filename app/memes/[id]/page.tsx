@@ -1,6 +1,7 @@
 import { notFound, redirect } from 'next/navigation'
 import { sbServer } from '@/lib/sb/server'
 import { fontVars } from '@/lib/fonts'
+import { getViewer } from '@/lib/viewer'
 import Detail from './Detail'
 import '../../memes.css'
 
@@ -38,14 +39,13 @@ export default async function MemePage({ params }: { params: Promise<{ id: strin
     ((mineRes.data as any[]) ?? []).map((v) => [v.caption_id, v.value])
   )
 
-  const meta = user.user_metadata ?? {}
   return (
     <main className={`c-page ${fontVars}`}>
       <Detail
         meme={{ id: image.id, url: signedRes.data?.signedUrl ?? null, description: image.description, captions, ownerId: (image as any).user_id }}
         initialScores={scores}
         initialVotes={myVotes}
-        user={{ id: user.id, name: meta.full_name ?? meta.name ?? '', avatar: meta.avatar_url ?? meta.picture ?? null }}
+        user={await getViewer(supabase, user)}
       />
     </main>
   )

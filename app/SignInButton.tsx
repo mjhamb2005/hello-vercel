@@ -1,6 +1,7 @@
 'use client'
 import { useEffect, useState } from 'react'
 import { startGoogleSignIn } from '@/lib/google-auth'
+import { reportError } from '@/lib/report'
 
 export default function SignInButton() {
   const [busy, setBusy] = useState(false)
@@ -18,7 +19,8 @@ export default function SignInButton() {
     setError('')
     try {
       await startGoogleSignIn()
-    } catch {
+    } catch (e) {
+      reportError('sign_in', e, { step: 'opening Google' })
       setError('Couldn’t open Google sign-in. Try again.')
       setBusy(false)
     }

@@ -23,7 +23,7 @@ export async function POST(request: Request) {
     captions = await writeCaptions(description)
   } catch (e) {
     console.error('captions failed', e)
-    return NextResponse.json({ error: 'The AI couldn’t write captions. Try again.' }, { status: 502 })
+    return NextResponse.json({ error: 'The AI couldn’t write captions. Try again.', detail: String((e as any)?.message ?? e).slice(0, 500) }, { status: 502 })
   }
 
   const { data: image, error: imageError } = await supabase
@@ -35,7 +35,7 @@ export async function POST(request: Request) {
   if (imageError || !image) {
     const duplicate = imageError?.code === '23505'
     return NextResponse.json(
-      { error: duplicate ? 'This photo was already turned into a meme.' : 'We couldn’t save your meme. Try again.' },
+      { error: duplicate ? 'This photo was already turned into a meme.' : 'We couldn’t save your meme. Try again.', detail: imageError?.message ?? 'no row' },
       { status: duplicate ? 409 : 500 }
     )
   }
@@ -49,7 +49,7 @@ export async function POST(request: Request) {
 
   if (captionError || !rows) {
     await supabase.from('meme_images').delete().eq('id', image.id) // don't leave a meme with no captions
-    return NextResponse.json({ error: 'We couldn’t save the captions. Try again.' }, { status: 500 })
+    return NextResponse.json({ error: 'We couldn’t save the captions. Try again.', detail: captionError?.message ?? 'no rows' }, { status: 500 })
   }
 
   const { data: signed } = await supabase.storage.from('memes').createSignedUrl(path, 60 * 60 * 6)

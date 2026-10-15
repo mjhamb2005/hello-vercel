@@ -1,6 +1,7 @@
 'use client'
 import { useEffect, useRef } from 'react'
 import { sbBrowser } from '@/lib/sb/browser'
+import { reportThenContinue } from '@/lib/report'
 import { takeGoogleSession } from '@/lib/google-auth'
 
 // Google sends the user back here with an ID token in the URL fragment.
@@ -20,6 +21,7 @@ export default function AuthCallback() {
       window.history.replaceState(null, '', '/auth/callback') // never leave the token in the address bar
 
       const err = hash.get('error') || query.get('error')
+      if (err && err !== 'access_denied') await reportThenContinue('sign_in', `Google returned: ${err}`)
       if (err) return go(`/?error=${err === 'access_denied' ? 'cancelled' : 'auth'}`)
 
       const supabase = sbBrowser()
@@ -32,17 +34,24 @@ export default function AuthCallback() {
       }
 
       const saved = takeGoogleSession()
-      if (!saved || saved.state !== hash.get('state')) return go('/?error=auth')
+      if (!saved || saved.state !== hash.get('state')) {
+        await reportThenContinue('sign_in', 'Sign-in state didn’t match (expired or opened in another tab)')
+        return go('/?error=auth')
+      }
 
       const { error } = await supabase.auth.signInWithIdToken({ provider: 'google', token: idToken, nonce: saved.nonce })
       if (error) {
         console.error('Supabase sign-in failed:', error.message)
+        await reportThenContinue('sign_in', `Supabase sign-in failed: ${error.message}`)
         return go('/?error=auth')
       }
       go('/auth/continue')
     }
 
-    run().catch(() => go('/?error=auth'))
+    run().catch(async (e) => {
+      await reportThenContinue('sign_in', e)
+      go('/?error=auth')
+    })
   }, [])
 
   return (

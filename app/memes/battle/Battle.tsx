@@ -7,6 +7,7 @@ import TopBar from '../ui/TopBar'
 import MemeImage from '../ui/MemeImage'
 import { reauth } from '../ui/MakeMemeDialog'
 import { useGeneration } from '../ui/Generation'
+import { reportError } from '@/lib/report'
 
 type Round = { meme: Meme; a: Caption; b: Caption }
 
@@ -87,6 +88,7 @@ export default function Battle({ memes, initialVotes, user }: { memes: Meme[]; i
       if (error) {
         clearTimeout(t)
         if (/jwt|auth|401/i.test(error.message)) return reauth()
+        reportError('battle_pick', error.message, { memeId: round.meme.id, captionId: winner.id })
         setToast('That pick didn’t save. Try again.')
         setPicked(null)
         setPicks((n) => n - 1)

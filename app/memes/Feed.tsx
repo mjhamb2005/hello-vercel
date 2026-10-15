@@ -8,6 +8,7 @@ import TopBar from './ui/TopBar'
 import MemeImage from './ui/MemeImage'
 import { useGeneration } from './ui/Generation'
 import DeleteMeme from './ui/DeleteMeme'
+import { reportError } from '@/lib/report'
 
 export default function Feed({
   initialMemes,
@@ -32,6 +33,10 @@ export default function Feed({
     return [...created.filter((m) => !have.has(m.id)), ...initialMemes].filter((m) => !deleted.includes(m.id))
   }, [created, initialMemes, deleted])
   const mine = memes.filter((m) => m.ownerId === user.id)
+
+  useEffect(() => {
+    if (loadError) reportError('load', loadError, { what: 'feed' })
+  }, [loadError])
 
   useEffect(() => {
     const { data } = sbBrowser().auth.onAuthStateChange((event: string) => {

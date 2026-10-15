@@ -1,6 +1,6 @@
 export type Caption = { id: number; content: string }
 export type Meme = { id: number; url: string | null; description: string; captions: Caption[]; fresh?: boolean; ownerId?: string }
-export type User = { id: string; name: string; avatar: string | null }
+export type User = { id: string; name: string; avatar: string | null; isAdmin?: boolean }
 
 // Leading caption = highest score; ties go to the earliest caption
 export function leaderOf(captions: Caption[], scores: Record<number, number>) {
