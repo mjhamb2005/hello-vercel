@@ -6,6 +6,7 @@ import './memes.css'
 const MESSAGES: Record<string, string> = {
   cancelled: 'Sign-in was cancelled. Try again whenever you’re ready.',
   auth: 'Google sign-in didn’t finish. Try again.',
+  not_allowed: 'Caption Club is invite-only right now. Sign in with a school email we accept, or ask an admin to add yours.',
 }
 
 export default async function Home({ searchParams }: { searchParams: Promise<{ error?: string }> }) {

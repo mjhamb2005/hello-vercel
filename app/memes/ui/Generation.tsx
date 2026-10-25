@@ -105,7 +105,7 @@ export function GenerationProvider({ children }: { children: ReactNode }) {
         patch(id, { stage: 'writing', description: d.description })
 
         step = 'captions'
-        const c = await post('/api/captions', { path, description: d.description })
+        const c = await post('/api/captions', { path, description: d.description, requestId: d.requestId })
         setCreated((list) => [{ ...c.meme, ownerId: user.id, fresh: true }, ...list])
         patch(id, { stage: 'done', meme: c.meme })
       } catch (e: any) {
