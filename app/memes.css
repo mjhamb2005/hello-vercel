@@ -129,7 +129,9 @@ kbd.c-key { display: inline-grid; place-items: center; min-width: 26px; height: 
   color: var(--muted); font: 700 15px var(--c-sans), sans-serif; cursor: pointer; transition: background .15s, color .15s; }
 .c-filter button:hover:not(:disabled) { color: var(--chalk); }
 .c-filter button:disabled { opacity: .45; cursor: default; }
-.c-filter button.is-on { background: var(--chalk); color: var(--stage); }
+.c-filter button.is-on, .c-filter button.is-on:hover:not(:disabled) { background: var(--chalk); color: var(--stage); }
+.c-filter em { font-style: normal; }
+.c-filter .c-short { display: none; }
 .c-filter button span { min-width: 22px; padding: 1px 7px; border-radius: 999px; background: var(--stage-3); color: var(--chalk); font-size: 12px; font-variant-numeric: tabular-nums; }
 .c-filter button.is-on span { background: var(--stage); color: var(--light); }
 .c-section-head > span { color: var(--dim); font-size: 15px; }
@@ -469,6 +471,78 @@ kbd.c-key { display: inline-grid; place-items: center; min-width: 26px; height: 
 .c-job-actions { display: flex; gap: 8px; margin-top: 10px; }
 .c-job-x { position: absolute; top: 6px; right: 6px; width: 30px; height: 30px; font-size: 22px; }
 
+/* ---------- Account menu ---------- */
+.c-account { position: relative; }
+button.c-avatar { padding: 0; border: none; background: none; cursor: pointer; transition: transform .15s; }
+button.c-avatar:hover img, button.c-avatar:hover span, .c-avatar.is-open img, .c-avatar.is-open span { box-shadow: 0 0 0 2px var(--stage), 0 0 0 3.5px var(--light); }
+.c-plus { font-size: 20px; line-height: 1; margin: -2px -2px 0 -4px; }
+.c-menu { position: absolute; right: 0; top: calc(100% + 10px); z-index: 30; width: 250px; padding: 8px; display: flex; flex-direction: column;
+  background: var(--stage-2); border: 1px solid var(--line-2); border-radius: var(--r); box-shadow: 0 24px 60px rgba(0, 0, 0, .6);
+  animation: c-menu-in .16s ease-out; }
+@keyframes c-menu-in { from { opacity: 0; transform: translateY(-6px); } to { opacity: 1; transform: none; } }
+.c-menu form { margin: 0; }
+.c-menu-who { display: flex; align-items: center; gap: 12px; padding: 8px 10px 12px; margin-bottom: 6px; border-bottom: 1px solid var(--line); }
+.c-menu-who b { display: block; font-size: 15px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 160px; }
+.c-menu-who small { display: block; color: var(--dim); font-size: 13px; margin-top: 2px; }
+.c-menu-avatar img, .c-menu-avatar span { width: 34px; height: 34px; }
+.c-menu-item { display: flex; align-items: center; justify-content: space-between; width: 100%; padding: 10px 12px; border: none; border-radius: var(--r-sm);
+  background: none; color: var(--chalk); font: 700 15px var(--c-sans), sans-serif; text-align: left; text-decoration: none; cursor: pointer; }
+.c-menu-item:hover, .c-menu-item:focus-visible { background: var(--stage-3); }
+.c-menu-item em { font-style: normal; font-size: 11px; font-weight: 800; padding: 2px 7px; border-radius: 999px; background: var(--stage-3); color: var(--light); }
+.c-menu-signout { color: var(--muted); margin-top: 4px; border-top: 1px solid var(--line); border-radius: 0 0 var(--r-sm) var(--r-sm); }
+.c-menu-signout:hover { color: #FF8FA6; }
+
+/* ---------- First-visit guide ---------- */
+.c-hero-actions { display: flex; flex-wrap: wrap; gap: 10px; }
+.c-guide { position: relative; z-index: 1; max-width: 1240px; margin: 0 auto 40px; padding: 0 clamp(16px, 4vw, 48px); }
+.c-guide > * { position: relative; }
+.c-guide-head { display: flex; justify-content: space-between; align-items: center; gap: 12px; margin-bottom: 14px; }
+.c-guide h2 { margin: 0; font-size: 26px; }
+.c-guide ol { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px; }
+.c-guide li { display: flex; flex-direction: column; align-items: flex-start; gap: 12px; padding: 20px; background: var(--stage-2);
+  border: 1px solid var(--line); border-radius: var(--r); }
+.c-guide li > b { width: 32px; height: 32px; display: grid; place-items: center; border-radius: 50%; background: var(--light); color: #1B1206;
+  font-family: var(--c-marquee), sans-serif; font-weight: 400; font-size: 14px; }
+.c-guide li strong { display: block; font-size: 18px; margin-bottom: 4px; }
+.c-guide li span { display: block; color: var(--muted); font-size: 15px; line-height: 1.5; }
+.c-guide li .c-btn { margin-top: auto; }
+.c-guide-done { margin-top: 14px; font-size: 14px; color: var(--muted); }
+.c-guide-done:hover { color: var(--chalk); }
+
+/* ---------- Meme page: moving between memes ---------- */
+.c-detail-nav { display: flex; justify-content: space-between; align-items: center; margin-bottom: 18px; }
+.c-detail-nav .c-back { margin-bottom: 0; }
+.c-stepper { display: inline-flex; gap: 6px; }
+.c-step { width: 38px; height: 38px; display: grid; place-items: center; border-radius: 50%; border: 1.5px solid var(--line-2);
+  color: var(--chalk); font-size: 22px; line-height: 1; text-decoration: none; transition: border-color .15s, background .15s; }
+.c-step:hover { border-color: var(--light); background: var(--stage-3); }
+.c-step.is-off { opacity: .3; }
+.c-cap { cursor: pointer; }
+.c-up-next { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 14px 20px; margin-top: 22px; padding: 16px 18px;
+  border: 1px dashed var(--line-2); border-radius: var(--r); }
+.c-up-next p { margin: 0; color: var(--muted); font-size: 15px; }
+
+/* ---------- Profile extras ---------- */
+.c-saved { margin: -14px 0 18px; padding: 10px 14px; border-radius: var(--r-sm); background: rgba(255, 210, 90, .12); color: var(--light-2); font-size: 15px; font-weight: 700; }
+.c-photo-error { margin: -12px 0 18px; }
+.c-stats { margin-top: 22px; background: var(--stage-2); border: 1px solid var(--line); border-radius: var(--r-lg); padding: 24px 26px; }
+.c-stats h2 { margin: 0 0 16px; font-size: 26px; }
+.c-stat-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.c-stat-grid > div { padding: 14px 16px; border-radius: var(--r); background: var(--stage); border: 1px solid var(--line); }
+.c-stat-grid b { display: block; font-size: 36px; line-height: 1; font-weight: 800; font-stretch: 78%; color: var(--light); font-variant-numeric: tabular-nums; }
+.c-stat-grid span { display: block; margin-top: 6px; color: var(--dim); font-size: 14px; }
+.c-best { display: block; margin-top: 12px; padding: 14px 16px; border-radius: var(--r); border: 1px solid rgba(255, 210, 90, .4);
+  background: linear-gradient(90deg, rgba(255, 210, 90, .12), transparent); color: var(--chalk); text-decoration: none; transition: border-color .15s; }
+.c-best:hover { border-color: var(--light); }
+.c-best small { display: block; color: var(--light); font-size: 13px; font-weight: 800; margin-bottom: 4px; }
+.c-best span { font-size: 17px; font-weight: 700; line-height: 1.35; }
+.c-stats-note { margin: 12px 0 0; color: var(--muted); font-size: 15px; line-height: 1.5; }
+.c-stats .c-actions { margin-top: 16px; }
+
+/* ---------- Signing in ---------- */
+.c-signing { display: grid; place-content: center; justify-items: center; gap: 22px; }
+.c-signing p[role="status"] { margin: 0; color: var(--muted); font-size: 17px; }
+
 /* ---------- Responsive ---------- */
 @media (max-width: 960px) {
   .c-arena { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); }
@@ -478,6 +552,12 @@ kbd.c-key { display: inline-grid; place-items: center; min-width: 26px; height: 
   .c-pick { min-height: 150px; }
 }
 @media (max-width: 880px) {
+  .c-guide ol { grid-template-columns: minmax(0, 1fr); }
+  .c-filter { width: 100%; }
+  .c-filter button { flex: 1; justify-content: center; padding: 8px 10px; }
+  .c-filter .c-long { display: none; }
+  .c-filter .c-short { display: inline; }
+  .c-section-head > span { display: none; }
   .c-detail, .c-landing, .c-spotlight { grid-template-columns: minmax(0, 1fr); }
   .c-detail-meme { position: static; }
   .c-captions h1 { margin-top: 8px; }
@@ -511,7 +591,7 @@ kbd.c-key { display: inline-grid; place-items: center; min-width: 26px; height: 
   .c-brand { font-size: 14px; padding: 7px 11px 6px; }
   .c-tabs { width: 100%; justify-content: space-between; }
   .c-tab { flex: 1; justify-content: center; }
-  .c-nav .c-btn-quiet { display: none; }
+  .c-guide ol { grid-template-columns: minmax(0, 1fr); }
   .c-arena { grid-template-columns: minmax(0, 1fr); }
   .c-arena-a, .c-arena-b { grid-column: 1; }
   .c-arena-b { grid-row: 3; }

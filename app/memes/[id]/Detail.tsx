@@ -78,11 +78,15 @@ export default function Detail({
   initialScores,
   initialVotes,
   user,
+  prevId,
+  nextId,
 }: {
   meme: Meme
   initialScores: Record<number, number>
   initialVotes: Record<number, number>
   user: User
+  prevId: number | null
+  nextId: number | null
 }) {
   const supabase = sbBrowser()
   const router = useRouter()
@@ -114,6 +118,21 @@ export default function Detail({
     })
     return () => data.subscription.unsubscribe()
   }, [supabase])
+
+  // ← / → move to the newer / older meme, like flipping through the feed
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if (e.metaKey || e.ctrlKey || e.altKey || e.shiftKey) return
+      if ((e.target as HTMLElement)?.closest('input, textarea, select, dialog, [contenteditable]')) return
+      if (document.querySelector('dialog[open]')) return
+      if (e.key === 'ArrowLeft' && prevId) router.push(`/memes/${prevId}`)
+      if (e.key === 'ArrowRight' && nextId) router.push(`/memes/${nextId}`)
+    }
+    window.addEventListener('keydown', onKey)
+    return () => window.removeEventListener('keydown', onKey)
+  }, [prevId, nextId, router])
+
+  const votedCount = meme.captions.filter((c) => (votes[c.id] ?? 0) !== 0).length
 
   const leader = leaderOf(meme.captions, scores)
   const leaderScore = leader ? scores[leader.id] ?? 0 : 0
@@ -193,13 +212,19 @@ export default function Detail({
 
       <div className="c-detail">
         <div className="c-detail-meme">
-          <Link href="/memes" className="c-back"><span aria-hidden="true">←</span> All memes</Link>
+          <nav className="c-detail-nav" aria-label="Move between memes">
+            <Link href="/memes" className="c-back"><span aria-hidden="true">←</span> All memes</Link>
+            <span className="c-stepper">
+              {prevId ? <Link href={`/memes/${prevId}`} className="c-step" aria-label="Newer meme" title="Newer meme (←)">‹</Link> : <span className="c-step is-off" aria-hidden="true">‹</span>}
+              {nextId ? <Link href={`/memes/${nextId}`} className="c-step" aria-label="Older meme" title="Older meme (→)">›</Link> : <span className="c-step is-off" aria-hidden="true">›</span>}
+            </span>
+          </nav>
           <div className="c-meme-wrap c-lit">
             <MemeImage
               url={meme.url}
               caption={shown?.content ?? ''}
               alt={meme.description}
-              label={isPreview ? 'Preview' : leaderScore > 0 ? 'Headliner' : undefined}
+              label={isPreview ? 'Preview' : leaderScore > 0 ? 'Headliner' : isOwner ? 'Yours' : undefined}
             />
             {burst > 0 && (
               <div className="c-confetti" key={burst} aria-hidden="true">
@@ -216,7 +241,6 @@ export default function Detail({
             <button className="c-btn c-btn-outline" onClick={download} disabled={!meme.url || downloading}>
               {downloading ? 'Preparing…' : 'Download meme'}
             </button>
-            <Link href="/memes/battle" className="c-btn c-btn-quiet">Play Battle mode</Link>
             {isOwner && (
               <DeleteMeme
                 memeId={meme.id}
@@ -234,7 +258,9 @@ export default function Detail({
 
         <section className="c-captions" aria-labelledby="captions-title">
           <h1 id="captions-title">The lineup</h1>
-          <p className="c-sub">Five captions, ranked by votes. Vote up the funny ones and down the duds, and the top caption becomes the meme. Hover any caption to try it on the photo.</p>
+          <p className="c-sub">Five captions, ranked by votes. Vote up the funny ones and down the duds, and the top caption becomes the meme.{' '}
+            <span className="c-mouse">Hover any caption to try it on the photo.</span>
+            <span className="c-touch">Tap any caption to try it on the photo.</span></p>
 
           <ol className="c-cap-list">
             {ordered.map((c, i) => {
@@ -247,6 +273,11 @@ export default function Detail({
                   key={c.id}
                   ref={(el) => { if (el) rowRefs.current.set(c.id, el); else rowRefs.current.delete(c.id) }}
                   className={`c-cap${leading ? ' is-leading' : ''}${preview === c.id ? ' is-preview' : ''}`}
+                  onClick={(e) => {
+                    // Touch screens have no hover: tapping a caption (not its vote buttons) previews it
+                    if ((e.target as HTMLElement).closest('.c-vote')) return
+                    setPreview((p) => (p === c.id ? null : c.id))
+                  }}
                   onMouseEnter={() => setPreview(c.id)}
                   onMouseLeave={() => setPreview(null)}
                   onFocus={() => setPreview(c.id)}
@@ -282,6 +313,21 @@ export default function Detail({
               )
             })}
           </ol>
+
+          <div className="c-up-next">
+            <p>
+              {votedCount === 0
+                ? 'No votes from you yet on this photo.'
+                : `You voted on ${votedCount} of ${meme.captions.length} captions. Your votes are saved.`}
+            </p>
+            {nextId ? (
+              <Link href={`/memes/${nextId}`} className={`c-btn ${votedCount > 0 ? 'c-btn-primary' : 'c-btn-outline'}`}>
+                Next meme <span aria-hidden="true">→</span>
+              </Link>
+            ) : (
+              <Link href="/memes/battle" className="c-btn c-btn-outline">That’s the last one. Play Battle <span aria-hidden="true">→</span></Link>
+            )}
+          </div>
         </section>
       </div>
 

@@ -1,30 +1,22 @@
-import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import type { Metadata, Viewport } from "next";
 import "./globals.css";
 import "./memes.css";
+import { fontVars } from "@/lib/fonts";
 import { GenerationProvider } from "./memes/ui/Generation";
-
-const geistSans = Geist({
-  variable: "--font-geist-sans",
-  subsets: ["latin"],
-});
-
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
-});
 
 export const metadata: Metadata = {
   title: "Caption Club",
   description: "Upload a photo, AI writes five captions, the crowd votes on the funniest.",
 };
 
+export const viewport: Viewport = {
+  themeColor: "#17111C",
+  colorScheme: "dark",
+};
+
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
-    <html
-      lang="en"
-      className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
-    >
+    <html lang="en" className={`${fontVars} h-full antialiased`}>
       <body className="min-h-full flex flex-col">
         <GenerationProvider>{children}</GenerationProvider>
       </body>

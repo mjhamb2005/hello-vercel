@@ -6,18 +6,21 @@ type Props = {
   firstName: string
   lastName: string
   photoUrl: string | null
+  firstTime: boolean
 }
 
-export default function ProfileForm({ firstName, lastName, photoUrl }: Props) {
+export default function ProfileForm({ firstName, lastName, photoUrl, firstTime }: Props) {
   const [preview, setPreview] = useState<string | null>(photoUrl)
   const [saving, setSaving] = useState(false)
+  const [photoError, setPhotoError] = useState('')
   const fileInput = useRef<HTMLInputElement>(null)
 
   function onPhotoChange(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0]
     if (!file) return
+    setPhotoError('')
     if (file.size > 4 * 1024 * 1024) {
-      alert('Please pick a photo under 4 MB.')
+      setPhotoError('That photo is over 4 MB. Pick a smaller one.')
       e.target.value = ''
       return
     }
@@ -33,6 +36,7 @@ export default function ProfileForm({ firstName, lastName, photoUrl }: Props) {
       encType="multipart/form-data"
       onSubmit={() => setSaving(true)}
     >
+      {firstTime && <input type="hidden" name="next" value="feed" />}
       <div className="c-photo">
         <button type="button" className="c-photo-btn" onClick={() => fileInput.current?.click()} aria-label="Change photo">
           {preview ? <img src={preview} alt="" className="c-photo-img" /> : <div className="c-photo-img">{initials || '+'}</div>}
@@ -41,6 +45,7 @@ export default function ProfileForm({ firstName, lastName, photoUrl }: Props) {
           {preview ? 'Change photo' : 'Add a photo'}
         </button>
       </div>
+      {photoError && <p className="c-error c-photo-error" role="alert">{photoError}</p>}
       <input
         ref={fileInput}
         type="file"
@@ -62,7 +67,7 @@ export default function ProfileForm({ firstName, lastName, photoUrl }: Props) {
       </div>
 
       <button type="submit" className="c-btn c-btn-primary" disabled={saving}>
-        {saving ? 'Saving…' : 'Save profile'}
+        {saving ? 'Saving…' : firstTime ? 'Save and start voting' : 'Save profile'}
       </button>
     </form>
   )

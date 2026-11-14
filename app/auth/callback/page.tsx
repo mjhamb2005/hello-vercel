@@ -57,8 +57,9 @@ export default function AuthCallback() {
   }, [])
 
   return (
-    <main style={{ minHeight: '100vh', display: 'grid', placeItems: 'center', background: '#F2F1EC', color: '#141414', fontFamily: 'system-ui, sans-serif' }}>
-      <p style={{ fontSize: 18 }} role="status">Signing you in…</p>
+    <main className="c-page c-signing">
+      <p className="c-brand">Caption Club</p>
+      <p role="status">Signing you in…</p>
     </main>
   )
 }

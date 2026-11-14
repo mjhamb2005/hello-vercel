@@ -55,7 +55,9 @@ export async function POST(request: Request) {
     return NextResponse.redirect(`${origin}/profile?error=save`, 303)
   }
 
-  return NextResponse.redirect(`${origin}/memes`, 303)
+  // First-time setup goes on to the feed; later edits come back here with a "Saved" note
+  const next = formData.get('next') === 'feed' ? '/memes' : '/profile?saved=1'
+  return NextResponse.redirect(`${origin}${next}`, 303)
 }
 // Profile saves happen on the server, so they're logged from here (the browser never sees the error)
 async function logProfileError(supabase: any, user: { id: string; email?: string | null }, message: string, detail: string) {

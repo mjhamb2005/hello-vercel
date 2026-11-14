@@ -18,7 +18,7 @@ export default async function MemePage({ params }: { params: Promise<{ id: strin
 
   const { data: image } = await supabase
     .from('meme_images')
-    .select('id, user_id, storage_path, description, meme_captions(id, content)')
+    .select('id, user_id, storage_path, description, created_at, meme_captions(id, content)')
     .eq('id', memeId)
     .maybeSingle()
   if (!image) notFound()
@@ -26,10 +26,13 @@ export default async function MemePage({ params }: { params: Promise<{ id: strin
   const captions = [...((image as any).meme_captions ?? [])].sort((a: any, b: any) => a.id - b.id)
   const ids = captions.map((c: any) => c.id)
 
-  const [scoresRes, mineRes, signedRes] = await Promise.all([
+  // Neighbours in feed order (newest first), so you can move through memes without going back to the feed
+  const [scoresRes, mineRes, signedRes, newerRes, olderRes] = await Promise.all([
     supabase.rpc('meme_caption_scores'),
-    ids.length ? supabase.from('meme_votes').select('caption_id, value').in('caption_id', ids) : Promise.resolve({ data: [] as any[] }),
+    ids.length ? supabase.from('meme_votes').select('caption_id, value').eq('user_id', user.id).in('caption_id', ids) : Promise.resolve({ data: [] as any[] }),
     supabase.storage.from('memes').createSignedUrl(image.storage_path, 60 * 60 * 6),
+    supabase.from('meme_images').select('id').gt('created_at', (image as any).created_at).order('created_at', { ascending: true }).limit(1).maybeSingle(),
+    supabase.from('meme_images').select('id').lt('created_at', (image as any).created_at).order('created_at', { ascending: false }).limit(1).maybeSingle(),
   ])
 
   const scores: Record<number, number> = Object.fromEntries(
@@ -42,10 +45,13 @@ export default async function MemePage({ params }: { params: Promise<{ id: strin
   return (
     <main className={`c-page ${fontVars}`}>
       <Detail
+        key={image.id}
         meme={{ id: image.id, url: signedRes.data?.signedUrl ?? null, description: image.description, captions, ownerId: (image as any).user_id }}
         initialScores={scores}
         initialVotes={myVotes}
         user={await getViewer(supabase, user)}
+        prevId={(newerRes.data as any)?.id ?? null}
+        nextId={(olderRes.data as any)?.id ?? null}
       />
     </main>
   )
