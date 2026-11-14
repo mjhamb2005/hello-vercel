@@ -19,3 +19,6 @@ body {
   color: var(--foreground);
   font-family: var(--c-sans), system-ui, sans-serif;
 }
+
+html { scroll-behavior: smooth; }
+@media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
