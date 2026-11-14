@@ -157,7 +157,9 @@ kbd.c-key { display: inline-grid; place-items: center; min-width: 26px; height: 
 .c-landing::before { left: 0; border-radius: 0 0 40px 0; }
 .c-landing::after { right: 0; border-radius: 0 0 0 40px; }
 .c-landing-copy { position: relative; z-index: 1; }
-.c-landing h1 { font-size: clamp(48px, 7.4vw, 104px); line-height: .88; margin: 28px 0 0; max-width: 11ch; }
+.c-landing h1 { font-size: clamp(48px, 7vw, 100px); line-height: .9; margin: 28px 0 0; }
+.c-landing h1 span { display: block; }
+.c-landing h1 .c-h1-win { color: var(--light); text-shadow: 0 0 40px var(--glow); }
 .c-lede { margin: 24px 0 32px; font-size: 19px; line-height: 1.55; color: var(--muted); max-width: 42ch; }
 .c-how { list-style: none; margin: 44px 0 0; padding: 0; display: grid; gap: 12px; color: var(--muted); font-size: 15px; }
 .c-how li { display: flex; align-items: center; gap: 12px; }

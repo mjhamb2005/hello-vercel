@@ -17,7 +17,9 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ e
     <main className={`c-page c-landing ${fontVars}`}>
       <div className="c-landing-copy">
         <p className="c-brand">Caption Club</p>
-        <h1>Five captions walk into a photo.</h1>
+        <h1>
+          <span>Your photo.</span> <span>Five captions.</span> <span className="c-h1-win">One winner.</span>
+        </h1>
         <p className="c-lede">
           Upload any photo and AI writes five meme captions for it. Everyone votes, and the funniest one gets the
           spotlight and becomes the meme.
