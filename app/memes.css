@@ -202,10 +202,13 @@ kbd.c-key { display: inline-grid; place-items: center; min-width: 26px; height: 
   box-shadow: 0 40px 90px rgba(0, 0, 0, .5); animation: c-pop .45s ease-out; }
 .c-game-score { margin: 0; font: 400 76px/1 var(--c-marquee), sans-serif; color: var(--light); text-shadow: 0 0 40px var(--glow); }
 .c-game-score span { font-size: 36px; color: var(--dim); }
-.c-game-end h2 { margin: 18px auto 10px; font-size: 30px; line-height: 1.05; max-width: 16ch; }
+.c-game-end h2 { margin: 14px auto 22px; font-size: 30px; line-height: 1.05; max-width: 16ch; }
 .c-game-end > p:not(.c-game-score) { margin: 0 auto 26px; color: var(--muted); font-size: 16px; line-height: 1.5; max-width: 34ch; }
-.c-game-end > div { display: flex; justify-content: center; }
-.c-game-again { display: block; margin: 16px auto 0; color: var(--muted); font-size: 14px; }
+.c-game-yours { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 10px; margin: 0 auto 22px; max-width: 320px;
+  aspect-ratio: 4 / 3; border: 2px dashed rgba(255, 210, 90, .45); border-radius: var(--r); background: rgba(255, 210, 90, .05);
+  color: var(--light); font-weight: 800; font-size: 15px; }
+.c-game-yours svg { width: 44px; height: 44px; fill: none; stroke: var(--light); stroke-width: 3; stroke-linecap: round; stroke-linejoin: round; }
+.c-game-end > p:last-child { margin-bottom: 0; }
 
 /* ---------- Feed ---------- */
 .c-spotlight { max-width: 1240px; margin: 12px auto 72px; padding: 0 clamp(16px, 4vw, 48px); display: grid;

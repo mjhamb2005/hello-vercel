@@ -1,6 +1,5 @@
 'use client'
 import { useEffect, useState, type CSSProperties, type ReactNode } from 'react'
-import SignInButton from './SignInButton'
 
 // The landing page doesn't explain Caption Club, it lets you play one round of it.
 // Three photos, two AI captions each: pick the funnier one, then see if the crowd agreed.
@@ -55,11 +54,6 @@ export default function DemoMeme() {
     setPick(null)
     setRound((n) => n + 1)
   }
-  function restart() {
-    setRound(0)
-    setPick(null)
-    setMatches(0)
-  }
 
   if (done) {
     return (
@@ -67,9 +61,11 @@ export default function DemoMeme() {
         <div className="c-game-end">
           <p className="c-game-score">{matches}<span>/{ROUNDS.length}</span></p>
           <h2>{matches === ROUNDS.length ? 'You and the crowd are on the same wavelength.' : matches === 0 ? 'You’ve got a contrarian sense of humor.' : 'Your humor has range.'}</h2>
-          <p>That was three photos. Now upload your own, AI writes five captions for it, and everyone votes.</p>
-          <SignInButton />
-          <button className="c-link-btn c-game-again" onClick={restart}>Play again</button>
+          <div className="c-game-yours" aria-hidden="true">
+            <svg viewBox="0 0 48 48"><rect x="6" y="10" width="36" height="28" rx="5" /><circle cx="18" cy="21" r="4" /><path d="M6 33l11-9 8 7 6-5 11 9" /></svg>
+            <span>Your photo goes here</span>
+          </div>
+          <p>The next round is yours. Sign in, upload any photo, and AI writes five captions for everyone to vote on.</p>
         </div>
       </div>
     )
