@@ -166,30 +166,46 @@ kbd.c-key { display: inline-grid; place-items: center; min-width: 26px; height: 
 .c-how b { width: 28px; height: 28px; flex: none; display: grid; place-items: center; border-radius: 50%; border: 1.5px solid var(--line-2);
   color: var(--light); font-family: var(--c-marquee), sans-serif; font-weight: 400; font-size: 13px; }
 .c-demo { position: relative; z-index: 1; max-width: 520px; justify-self: center; width: 100%; }
-.c-demo-meme { border-radius: var(--r-lg); box-shadow: 0 40px 90px rgba(0, 0, 0, .6), 0 0 0 1px rgba(255, 236, 214, .08); }
+.c-demo-meme { border-radius: var(--r-lg); box-shadow: 0 40px 90px rgba(0, 0, 0, .6), 0 0 0 1px rgba(255, 236, 214, .08); animation: c-pop .45s ease-out; }
+.c-demo-meme svg { aspect-ratio: 4 / 3; }
 .c-demo-chip { position: absolute; top: 12px; left: 12px; display: inline-flex; align-items: center; gap: 6px; padding: 5px 11px; border-radius: 999px;
   background: rgba(14, 10, 17, .7); backdrop-filter: blur(6px); color: var(--chalk); font-size: 12px; font-weight: 800; }
 .c-demo-chip::before { content: ''; width: 7px; height: 7px; border-radius: 50%; background: var(--light); }
-.c-demo-head { display: flex; justify-content: space-between; align-items: center; gap: 12px; margin: 20px 2px 10px; font-size: 13px; font-weight: 700; color: var(--dim); }
-.c-demo-live { display: inline-flex; align-items: center; gap: 7px; color: var(--muted); }
-.c-demo-live i { width: 8px; height: 8px; border-radius: 50%; background: #FF4D6D; box-shadow: 0 0 0 0 rgba(255, 77, 109, .6); animation: c-live 1.6s ease-out infinite; }
-@keyframes c-live { 70% { box-shadow: 0 0 0 7px rgba(255, 77, 109, 0); } 100% { box-shadow: 0 0 0 0 rgba(255, 77, 109, 0); } }
-.c-demo-list { --row: 48px; --gap: 8px; position: relative; list-style: none; margin: 0; padding: 0;
-  height: calc(var(--rows) * (var(--row) + var(--gap)) - var(--gap)); }
-.c-demo-list li { position: absolute; left: 0; right: 0; top: 0; height: var(--row); overflow: hidden; display: flex; align-items: center; justify-content: space-between; gap: 12px;
-  padding: 0 14px; border-radius: var(--r-sm); font-size: 15px; color: var(--muted); background: var(--stage-2); border: 1px solid var(--line);
-  transform: translateY(calc(var(--rank) * (var(--row) + var(--gap)))); transition: transform .6s cubic-bezier(.2, .9, .25, 1), color .3s, border-color .3s; }
-.c-demo-list li::before { content: ''; position: absolute; inset: 0; width: var(--w, 0%); background: rgba(255, 210, 90, .08); transition: width .6s ease; }
-.c-demo-list li > * { position: relative; }
-.c-demo-list li.is-on { color: var(--chalk); border-color: rgba(255, 210, 90, .65); }
-.c-demo-list li.is-on::before { background: rgba(255, 210, 90, .17); }
-.c-demo-text { min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.c-demo-list b { color: var(--light); font-variant-numeric: tabular-nums; }
-.c-demo-list li.is-voted b { animation: c-bump .4s ease-out; }
-@media (max-width: 640px) {
-  .c-demo-list { --row: 58px; }
-  .c-demo-text { white-space: normal; font-size: 14px; line-height: 1.25; }
-}
+
+/* Landing mini-game: pick the funnier caption */
+.c-game-top { display: flex; justify-content: space-between; align-items: center; gap: 12px; margin: 0 2px 12px; font-size: 14px; font-weight: 800; color: var(--light); }
+.c-game-dots { display: inline-flex; gap: 6px; }
+.c-game-dots i { width: 22px; height: 6px; border-radius: 999px; background: var(--stage-3); transition: background .3s; }
+.c-game-dots i.is-done { background: rgba(255, 210, 90, .5); }
+.c-game-dots i.is-on { background: var(--light); }
+.c-game-stamp { animation: c-stamp .38s cubic-bezier(.2, 1.4, .4, 1); }
+.c-game-picks { display: grid; gap: 10px; margin-top: 16px; }
+.c-game-pick { position: relative; overflow: hidden; display: flex; align-items: center; gap: 12px; width: 100%; min-height: 56px; padding: 10px 14px;
+  border-radius: var(--r); border: 1.5px solid var(--line-2); background: var(--stage-2); color: var(--chalk); text-align: left; cursor: pointer;
+  font: 700 16px/1.3 var(--c-sans), sans-serif; transition: transform .15s, border-color .15s, background .15s, opacity .3s; }
+.c-game-pick::before { content: ''; position: absolute; inset: 0; width: var(--pct); background: rgba(255, 210, 90, .1); transition: width .8s cubic-bezier(.2, .9, .25, 1); }
+.c-game-pick > * { position: relative; }
+.c-game-pick:hover:not(:disabled) { border-color: var(--light); transform: translateY(-2px); background: var(--stage-3); }
+.c-game-pick:disabled { cursor: default; }
+.c-game-pick > b { width: 28px; height: 28px; flex: none; display: grid; place-items: center; border-radius: 50%; background: var(--stage-3);
+  font: 400 12px var(--c-marquee), sans-serif; color: var(--light); }
+.c-game-text { flex: 1; min-width: 0; }
+.c-game-pct { font-weight: 800; font-variant-numeric: tabular-nums; color: var(--muted); animation: c-pop .4s ease-out; }
+.c-game-pick.is-crowd::before { background: rgba(255, 210, 90, .2); }
+.c-game-pick.is-crowd .c-game-pct { color: var(--light); }
+.c-game-pick.is-mine { border-color: var(--light); box-shadow: 0 14px 34px -14px var(--glow); }
+.c-game-pick.is-mine > b { background: var(--light); color: #1B1206; }
+.c-game-pick:disabled:not(.is-mine) { opacity: .7; }
+.c-game-result { display: flex; justify-content: space-between; align-items: center; gap: 12px; min-height: 24px; margin: 14px 2px 0; font-size: 15px; color: var(--muted); }
+.c-game-result .c-link-btn { color: var(--light); font-weight: 800; white-space: nowrap; }
+.c-game-end { text-align: center; padding: 44px 28px; border-radius: var(--r-lg); background: var(--stage-2); border: 1px solid var(--line-2);
+  box-shadow: 0 40px 90px rgba(0, 0, 0, .5); animation: c-pop .45s ease-out; }
+.c-game-score { margin: 0; font: 400 76px/1 var(--c-marquee), sans-serif; color: var(--light); text-shadow: 0 0 40px var(--glow); }
+.c-game-score span { font-size: 36px; color: var(--dim); }
+.c-game-end h2 { margin: 18px auto 10px; font-size: 30px; line-height: 1.05; max-width: 16ch; }
+.c-game-end > p:not(.c-game-score) { margin: 0 auto 26px; color: var(--muted); font-size: 16px; line-height: 1.5; max-width: 34ch; }
+.c-game-end > div { display: flex; justify-content: center; }
+.c-game-again { display: block; margin: 16px auto 0; color: var(--muted); font-size: 14px; }
 
 /* ---------- Feed ---------- */
 .c-spotlight { max-width: 1240px; margin: 12px auto 72px; padding: 0 clamp(16px, 4vw, 48px); display: grid;
