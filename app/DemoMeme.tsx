@@ -1,9 +1,9 @@
 'use client'
-import { useEffect, useState, type CSSProperties, type ReactNode } from 'react'
+import { useEffect, useState, type ReactNode } from 'react'
 
 // The landing page doesn't explain Caption Club, it lets you play one round of it.
-// Three photos, two AI captions each: pick the funnier one, then see if the crowd agreed.
-type Round = { photo: ReactNode; alt: string; a: string; b: string; crowdA: number }
+// Three photos, two AI captions each: pick the funnier one and it becomes the meme.
+type Round = { photo: ReactNode; alt: string; a: string; b: string }
 
 const ROUNDS: Round[] = [
   {
@@ -11,28 +11,24 @@ const ROUNDS: Round[] = [
     alt: 'A laptop at night showing an essay with a blank page and a timer reading 4 minutes 59 seconds, surrounded by empty coffee cups',
     a: 'Five minutes left. Time to start the intro.',
     b: 'Coffee number four is doing absolutely nothing.',
-    crowdA: 67,
   },
   {
     photo: <ChatPhoto />,
     alt: 'A phone showing a group chat message asking who is in for tonight, seen by 12 people, with no replies',
     a: '12 people saw it. 0 people are coming.',
     b: 'The group chat when it’s time to Venmo me back',
-    crowdA: 44,
   },
   {
     photo: <AlarmPhoto />,
     alt: 'An alarm clock reading 5:30 AM next to a bed with a blanket pulled over the pillow',
     a: 'My alarm: it’s time. Me: it is not.',
     b: 'The snooze button doing the most important work of my day',
-    crowdA: 31,
   },
 ]
 
 export default function DemoMeme() {
   const [round, setRound] = useState(0)
   const [pick, setPick] = useState<'a' | 'b' | null>(null)
-  const [matches, setMatches] = useState(0)
   const done = round >= ROUNDS.length
 
   // After a pick, the next photo comes up on its own (or tap "Next")
@@ -45,9 +41,6 @@ export default function DemoMeme() {
 
   function choose(side: 'a' | 'b') {
     if (pick) return
-    const r = ROUNDS[round]
-    const crowd = r.crowdA >= 50 ? 'a' : 'b'
-    if (side === crowd) setMatches((m) => m + 1)
     setPick(side)
   }
   function next() {
@@ -59,8 +52,7 @@ export default function DemoMeme() {
     return (
       <div className="c-demo c-game c-lit">
         <div className="c-game-end">
-          <p className="c-game-score">{matches}<span>/{ROUNDS.length}</span></p>
-          <h2>{matches === ROUNDS.length ? 'You and the crowd are on the same wavelength.' : matches === 0 ? 'You’ve got a contrarian sense of humor.' : 'Your humor has range.'}</h2>
+          <h2>That’s how it works.</h2>
           <div className="c-game-yours" aria-hidden="true">
             <svg viewBox="0 0 48 48"><rect x="6" y="10" width="36" height="28" rx="5" /><circle cx="18" cy="21" r="4" /><path d="M6 33l11-9 8 7 6-5 11 9" /></svg>
             <span>Your photo goes here</span>
@@ -72,9 +64,6 @@ export default function DemoMeme() {
   }
 
   const r = ROUNDS[round]
-  const pct = { a: r.crowdA, b: 100 - r.crowdA }
-  const crowdSide = r.crowdA >= 50 ? 'a' : 'b'
-  const agreed = pick === crowdSide
 
   return (
     <div className="c-demo c-game c-lit">
@@ -98,14 +87,12 @@ export default function DemoMeme() {
         {(['a', 'b'] as const).map((side) => (
           <button
             key={side + round}
-            className={`c-game-pick${pick === side ? ' is-mine' : ''}${pick && side === crowdSide ? ' is-crowd' : ''}`}
+            className={`c-game-pick${pick === side ? ' is-mine' : ''}`}
             onClick={() => choose(side)}
             disabled={!!pick}
-            style={{ '--pct': pick ? `${pct[side]}%` : '0%' } as CSSProperties}
           >
             <b>{side.toUpperCase()}</b>
             <span className="c-game-text">{side === 'a' ? r.a : r.b}</span>
-            {pick && <span className="c-game-pct">{pct[side]}%</span>}
           </button>
         ))}
       </div>
@@ -113,8 +100,8 @@ export default function DemoMeme() {
       <div className="c-game-result" aria-live="polite">
         {pick ? (
           <>
-            <span>{agreed ? `The crowd agrees. ${pct[pick]}% picked it too.` : `Bold pick. Only ${pct[pick]}% agreed.`}</span>
-            <button className="c-link-btn" onClick={next}>{round + 1 < ROUNDS.length ? 'Next photo →' : 'See your score →'}</button>
+            <span>Your pick is the meme.</span>
+            <button className="c-link-btn" onClick={next}>{round + 1 < ROUNDS.length ? 'Next photo →' : 'Your turn →'}</button>
           </>
         ) : (
           <span>Tap one. Your pick becomes the meme.</span>
